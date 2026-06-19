@@ -1,5 +1,5 @@
 using _Project.Code.Core;
-using _Project.Code.Core.Enums;
+using CoreUtils.GameEvents;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -21,6 +21,10 @@ namespace _Project.Code.Gameplay {
         [SerializeField] private AudioClip spinSfx;
         [SerializeField] private AudioClip landSfx;
 
+        [Header("Events (GameEventString, payload = state name)")]
+        [SerializeField] private GameEventString stateEntered;
+        [SerializeField] private GameEventString stateExited;
+
         private InputAction _spinAction;
         private float _angularVelocity;
         private bool _isSpinning;
@@ -33,14 +37,25 @@ namespace _Project.Code.Gameplay {
             _spinAction.AddBinding("<Mouse>/leftButton");
             _spinAction.performed += OnSpinPerformed;
 
-            StateManager state = GameManager.Instance.State;
-            state.OnStateChanged += HandleStateChanged;
-            SetInputActive(state.IsPlaying);
+            if (stateEntered != null) {
+                stateEntered.Event += HandleStateEntered;
+            }
+
+            if (stateExited != null) {
+                stateExited.Event += HandleStateExited;
+            }
+
+            // Match whatever state is already active when this object loads in.
+            SetInputActive(GameManager.Exists && GameManager.Instance.IsPlaying);
         }
 
         private void OnDisable() {
-            if (GameManager.Exists) {
-                GameManager.Instance.State.OnStateChanged -= HandleStateChanged;
+            if (stateEntered != null) {
+                stateEntered.Event -= HandleStateEntered;
+            }
+
+            if (stateExited != null) {
+                stateExited.Event -= HandleStateExited;
             }
 
             _spinAction.performed -= OnSpinPerformed;
@@ -77,8 +92,16 @@ namespace _Project.Code.Gameplay {
             Debug.Log($"[Spinner] Landed at {facing:0}°.");
         }
 
-        private void HandleStateChanged(GameState previous, GameState current) {
-            SetInputActive(current == GameState.Playing);
+        private void HandleStateEntered(string stateName) {
+            if (stateName == GameStateNames.Playing) {
+                SetInputActive(true);
+            }
+        }
+
+        private void HandleStateExited(string stateName) {
+            if (stateName == GameStateNames.Playing) {
+                SetInputActive(false);
+            }
         }
 
         private void SetInputActive(bool active) {

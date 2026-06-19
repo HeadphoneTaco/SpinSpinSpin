@@ -9,7 +9,7 @@ namespace _Project.Code.UI {
     ///     Sliders should be configured 0..1 in the inspector (see the menu setup guide).
     /// </summary>
     public class SettingsController : MonoBehaviour {
-        [Header("Sliders (range 0..1)")]
+        [Header("Sliders")]
         [SerializeField] private Slider musicSlider;
         [SerializeField] private Slider sfxSlider;
 
@@ -18,16 +18,16 @@ namespace _Project.Code.UI {
         [SerializeField] private Button closeButton;
 
         private void OnEnable() {
-            AudioManager audio = GameManager.Instance.Audio;
+            AudioManager audioManager = GameManager.Instance.Audio;
 
             // Reflect current volumes without firing the change callbacks.
             if (musicSlider != null) {
-                musicSlider.SetValueWithoutNotify(audio.MusicVolume);
+                musicSlider.SetValueWithoutNotify(audioManager.MusicVolume);
                 musicSlider.onValueChanged.AddListener(OnMusicChanged);
             }
 
             if (sfxSlider != null) {
-                sfxSlider.SetValueWithoutNotify(audio.SfxVolume);
+                sfxSlider.SetValueWithoutNotify(audioManager.SfxVolume);
                 sfxSlider.onValueChanged.AddListener(OnSfxChanged);
             }
 

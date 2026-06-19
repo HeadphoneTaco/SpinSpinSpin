@@ -43,6 +43,13 @@ namespace _Project.Code.Core {
 
             _instance = (T)this;
             _isQuitting = false;
+
+            // DontDestroyOnLoad only works on root objects, so detach if we were placed
+            // under a parent in the scene.
+            if (transform.parent != null) {
+                transform.SetParent(null);
+            }
+
             DontDestroyOnLoad(gameObject);
         }
 

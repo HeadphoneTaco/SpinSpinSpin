@@ -47,7 +47,7 @@ namespace _Project.Code.UI {
         }
 
         private void OnPlayClicked() {
-            GameManager.Instance.State.StartGame();
+            GameManager.Instance.StartGame();
         }
 
         private void OnSettingsClicked() {

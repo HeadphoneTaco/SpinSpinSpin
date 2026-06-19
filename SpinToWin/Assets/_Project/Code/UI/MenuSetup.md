@@ -42,23 +42,23 @@ and assign references here.
 
 ## 4. How it connects at runtime
 
-- All three controllers reach the game through the single front door:
-  `GameManager.Instance.State` and `GameManager.Instance.Audio`.
-- `GameManager` is a CoreUtils singleton — it **creates itself on first access**, so you do
-  **not** need to place a GameManager object in the scene. The first button press wires it up.
-- **Play** → `State.StartGame()` (MainMenu → Playing).
-- **Settings sliders** → `Audio.SetMusicVolume` / `Audio.SetSfxVolume`, and they initialize
-  to the current volumes when the panel opens.
+- The controllers reach the game through `GameManager.Instance` (transitions) and
+  `GameManager.Instance.Audio` (volume).
+- `GameManager` lives on the **[Managers]** object in the Start scene (see
+  `Code/Core/StateMachineSetup.md`). It persists across scenes, so it must exist in the boot
+  scene — it is no longer auto-created.
+- **Play** → `GameManager.Instance.StartGame()` (drives the StateMachine MainMenu → Playing,
+  which loads the Main scene).
+- **Settings sliders** → `Audio.SetMusicVolume` / `Audio.SetSfxVolume`, initialized to the
+  current volumes when the panel opens.
 - **Quit** → exits the build (and stops Play mode in the editor).
 
 ## 5. Quick test
 
 1. Press Play.
 2. Click **Settings**, drag the sliders — volumes update live on the AudioManager.
-3. Click **Play** — watch the Console; `StateManager` logs a warning only on invalid
-   transitions, so a clean MainMenu → Playing is silent. Add a temporary
-   `Debug.Log` subscriber on `GameManager.Instance.State.OnStateChanged` if you want to see
-   the transition.
+3. Click **Play** — the Console logs `[State] entered Playing` (from `DebugStateControls`, if
+   present) and the Main scene loads.
 
 ## Notes
 
