@@ -18,17 +18,31 @@ namespace _Project.Code.Core {
         public float SfxVolume => sfxVolume;
 
         private void Awake() {
+            EnsureSources();
+        }
+
+        /// <summary>
+        ///     Creates the audio sources if they don't exist yet. Called from Awake and
+        ///     defensively from every public method, so playback works even if a caller
+        ///     reaches the AudioManager before its Awake has run (possible when this
+        ///     component is added on demand by the GameManager singleton).
+        /// </summary>
+        private void EnsureSources() {
             // Created at runtime since this component is added programmatically by
             // GameManager (no prefab/inspector setup required).
-            _musicSource = gameObject.AddComponent<AudioSource>();
-            _musicSource.loop = true;
-            _musicSource.playOnAwake = false;
-            _musicSource.volume = musicVolume;
+            if (_musicSource == null) {
+                _musicSource = gameObject.AddComponent<AudioSource>();
+                _musicSource.loop = true;
+                _musicSource.playOnAwake = false;
+                _musicSource.volume = musicVolume;
+            }
 
-            _sfxSource = gameObject.AddComponent<AudioSource>();
-            _sfxSource.loop = false;
-            _sfxSource.playOnAwake = false;
-            _sfxSource.volume = sfxVolume;
+            if (_sfxSource == null) {
+                _sfxSource = gameObject.AddComponent<AudioSource>();
+                _sfxSource.loop = false;
+                _sfxSource.playOnAwake = false;
+                _sfxSource.volume = sfxVolume;
+            }
         }
 
         // --- Music ---------------------------------------------------------------
@@ -38,6 +52,8 @@ namespace _Project.Code.Core {
             if (clip == null) {
                 return;
             }
+
+            EnsureSources();
 
             if (_musicSource.isPlaying && _musicSource.clip == clip) {
                 return;
@@ -49,6 +65,7 @@ namespace _Project.Code.Core {
         }
 
         public void StopMusic() {
+            EnsureSources();
             _musicSource.Stop();
         }
 
@@ -60,17 +77,20 @@ namespace _Project.Code.Core {
                 return;
             }
 
+            EnsureSources();
             _sfxSource.PlayOneShot(clip, sfxVolume);
         }
 
         // --- Volume --------------------------------------------------------------
 
         public void SetMusicVolume(float volume) {
+            EnsureSources();
             musicVolume = Mathf.Clamp01(volume);
             _musicSource.volume = musicVolume;
         }
 
         public void SetSfxVolume(float volume) {
+            EnsureSources();
             sfxVolume = Mathf.Clamp01(volume);
             _sfxSource.volume = sfxVolume;
         }
