@@ -13,14 +13,14 @@ namespace _Project.Code.Core {
         /// <summary>Owns the high-level game state machine.</summary>
         public StateManager State { get; private set; }
 
-        // Future sub-managers slot in the same way, e.g.:
-        // public AudioManager Audio { get; private set; }
+        /// <summary>Handles music and sound-effect playback.</summary>
+        public AudioManager Audio { get; private set; }
 
         private void Awake() {
             // Attach (or reuse) the sub-managers on this GameObject so they share its
             // lifetime and DontDestroyOnLoad persistence.
             State = this.GetOrAddComponent<StateManager>();
-            // Audio = this.GetOrAddComponent<AudioManager>();
+            Audio = this.GetOrAddComponent<AudioManager>();
         }
 
         // CoreUtils.Singleton uses OnEnable/OnDisable to register the instance,
