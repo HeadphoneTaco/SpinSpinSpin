@@ -21,7 +21,7 @@ namespace _Project.Code.Gameplay {
         [SerializeField] private AudioClip spinSfx;
         [SerializeField] private AudioClip landSfx;
 
-        [Header("Events (GameEventString, payload = state name)")]
+        [Header("Events")]
         [SerializeField] private GameEventString stateEntered;
         [SerializeField] private GameEventString stateExited;
 
