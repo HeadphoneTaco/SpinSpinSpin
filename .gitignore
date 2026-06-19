@@ -15,7 +15,7 @@
 
 # NuGet Packages
 *.nupkg
-**/[Pp]ackages/*
+//**/[Pp]ackages/* //this is disabled to allow the packages folder to be included in the repository
 !**/[Pp]ackages/build/
 
 # .NET build artifacts
