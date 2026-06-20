@@ -41,6 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6591063990277970770}
+  - component: {fileID: 3558739200022242844}
   m_Layer: 0
   m_Name: Character_Gremlin
   m_TagString: Untagged
@@ -66,6 +67,31 @@ Transform:
   - {fileID: 280199836093360774}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!143 &3558739200022242844
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297657157248715752}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2561414266359479796
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,7 +191,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7491815402408867916}
-  - component: {fileID: 8871997694250704734}
   - component: {fileID: 39149890905091547}
   m_Layer: 0
   m_Name: Code
@@ -189,31 +214,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6591063990277970770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!143 &8871997694250704734
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4269676733220027926}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &39149890905091547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,6 +231,9 @@ MonoBehaviour:
   steerSmoothing: 12
   jumpHeight: 2
   gravity: -25
+  itemMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   stateEntered: {fileID: 11400000, guid: 517b0a74d23646aebf69e1cab543a00f, type: 2}
   stateExited: {fileID: 11400000, guid: 8066002bb4bd4afca1fd7660d2f71cb2, type: 2}
 --- !u!1 &5344205063516477188
@@ -242,7 +245,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1862685173799910110}
-  - component: {fileID: 7635942331103657307}
   m_Layer: 0
   m_Name: Colliders
   m_TagString: Untagged
@@ -265,26 +267,3 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6591063990277970770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &7635942331103657307
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5344205063516477188}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}

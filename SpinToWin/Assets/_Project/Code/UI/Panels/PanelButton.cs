@@ -24,8 +24,6 @@ namespace _Project.Code.UI.Panels {
         [SerializeField] private Button button;
         [SerializeField] private GameObject targetPanel;
         [SerializeField] private VisibilityAction action = VisibilityAction.Show;
-
-        [Tooltip("Play the screen transition (bubbles) around the swap. Off = instant.")]
         [SerializeField] private bool useTransition = true;
 
         protected virtual void Reset() {

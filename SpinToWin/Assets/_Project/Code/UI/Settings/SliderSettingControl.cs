@@ -15,10 +15,7 @@ namespace _Project.Code.UI.Settings {
     [RequireComponent(typeof(Slider))]
     public abstract class SliderSettingControl : MonoBehaviour {
         [SerializeField] private Slider slider;
-
-        [Tooltip("Optional label that shows the value as a percentage (e.g. 80%).")]
         [SerializeField] private TMP_Text valueLabel;
-
         private ISetting<float> _setting;
 
         /// <summary>Return the setting this slider edits (e.g. the music or SFX volume).</summary>

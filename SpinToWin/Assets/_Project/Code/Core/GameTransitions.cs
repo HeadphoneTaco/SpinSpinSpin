@@ -17,7 +17,6 @@ namespace _Project.Code.Core {
     ///     the bubbles cover the swap, so there's nothing here to wait on but the transition.
     /// </summary>
     public class GameTransitions : MonoBehaviour {
-        [Header("State → scene names")]
         [SerializeField] private string menuScene = "Start";
         [SerializeField] private string settingsScene = "Settings";
         [SerializeField] private string gameScene = "Main";

@@ -13,32 +13,17 @@ namespace _Project.Code.Gameplay {
     ///     runs while the game is Playing. Place one in <c>Main</c>; assign the sock + obstacle prefabs.
     /// </summary>
     public class TrackSpawner : MonoBehaviour, IScrollingItemPool {
-        [Header("Prefabs")]
         [SerializeField] private Collectible sockPrefab;
         [SerializeField] private Obstacle[] obstaclePrefabs;
-
-        [Header("Where things appear")]
-        [Tooltip("Z the gremlin sits at + how far ahead to spawn. Items ride from here toward 0.")]
         [SerializeField] private float spawnZ = 40f;
-        [Tooltip("Z behind the gremlin where items are recycled.")]
         [SerializeField] private float despawnZ = -10f;
-        [Tooltip("Ground height items spawn at.")]
         [SerializeField] private float groundY = 0f;
-        [Tooltip("Half the drum width. Items spawn within ±90% of this.")]
         [SerializeField] private float halfWidth = 2.5f;
-
-        [Header("Pacing")]
-        [Tooltip("World-units between spawn rows. Smaller = denser track.")]
         [SerializeField] private float spawnSpacing = 8f;
-        [Tooltip("Chance a row drops a hazard.")]
         [Range(0f, 1f)] [SerializeField] private float obstacleChance = 0.55f;
-        [Tooltip("Chance a row drops a sock cluster.")]
         [Range(0f, 1f)] [SerializeField] private float sockChance = 0.7f;
-
-        [Header("Sock clusters")]
         [SerializeField] private int sockClusterMin = 2;
         [SerializeField] private int sockClusterMax = 4;
-        [Tooltip("Z-gap between socks in a cluster so they form a line to scoop up.")]
         [SerializeField] private float sockSpacing = 2.5f;
 
         // Recycled-instance stacks, one per prefab, plus a lookup from instance back to its prefab.
@@ -82,11 +67,11 @@ namespace _Project.Code.Gameplay {
         }
 
         private void SpawnItem(ScrollingItem prefab, float x, float zOffset) {
+            // Move/show the whole prefab via Body — the script may sit on a child object.
             ScrollingItem item = GetFromPool(prefab);
-            item.transform.SetParent(transform, false);
-            item.transform.position = new Vector3(x, groundY, spawnZ + zOffset);
             item.Configure(this, despawnZ);
-            item.gameObject.SetActive(true);
+            item.Body.position = new Vector3(x, groundY, spawnZ + zOffset);
+            item.Body.gameObject.SetActive(true);
         }
 
         // --- Pooling -------------------------------------------------------------
@@ -97,7 +82,7 @@ namespace _Project.Code.Gameplay {
                 _poolFor[prefab] = stack;
             }
 
-            // Pop any still-valid recycled instance.
+            // Pop any still-valid recycled instance (already inactive from Release).
             while (stack.Count > 0) {
                 ScrollingItem recycled = stack.Pop();
                 if (recycled != null) {
@@ -107,6 +92,7 @@ namespace _Project.Code.Gameplay {
 
             ScrollingItem fresh = Instantiate(prefab);
             _prefabOf[fresh] = prefab;
+            fresh.Body.gameObject.SetActive(false); // Configure + position it before it's shown.
             return fresh;
         }
 
@@ -115,11 +101,11 @@ namespace _Project.Code.Gameplay {
                 return;
             }
 
-            item.gameObject.SetActive(false);
+            item.Body.gameObject.SetActive(false);
             if (_prefabOf.TryGetValue(item, out ScrollingItem prefab) && _poolFor.TryGetValue(prefab, out Stack<ScrollingItem> stack)) {
                 stack.Push(item);
             } else {
-                Destroy(item.gameObject);
+                Destroy(item.Body.gameObject);
             }
         }
     }
