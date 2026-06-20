@@ -48,9 +48,11 @@ namespace _Project.Code.Gameplay {
 
         private void Awake() {
             // Controller lives on the moving root, which may be this object, a parent, or a child.
-            _controller = GetComponent<CharacterController>()
-                          ?? GetComponentInParent<CharacterController>()
-                          ?? GetComponentInChildren<CharacterController>();
+            _controller = GetComponent<CharacterController>();
+            if (_controller == null) {
+                // Search the whole gremlin: parent, a sibling 'Colliders' object, or children.
+                _controller = transform.root.GetComponentInChildren<CharacterController>(true);
+            }
 
             if (_controller == null) {
                 Debug.LogError("[GremlinRunner] No CharacterController found on the gremlin or its " +

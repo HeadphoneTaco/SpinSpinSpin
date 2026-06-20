@@ -5,16 +5,24 @@ using UnityEngine;
 namespace _Project.Code.Gameplay {
     /// <summary>
     ///     Feeds the belt. Spawns socks and obstacles out ahead of the gremlin at a steady spacing in
-    ///     world units (distance-based, not time-based — so density stays honest as the run speeds up),
+    ///     world units (distance-based, not time-based, so density stays honest as the run speeds up),
     ///     scatters them across the drum width, and lets <see cref="ScrollingItem" /> carry them home.
+    ///
+    ///     Prefabs are referenced as plain <see cref="GameObject" />s (the prefab root), so the
+    ///     Code / Colliders / Mesh split is fine: the <see cref="Collectible" /> / <see cref="Obstacle" />
+    ///     script can sit on a `Code` child. The spawner resolves the <see cref="ScrollingItem" /> from
+    ///     the instance's children at spawn time.
     ///
     ///     Spent items are recycled through a small per-prefab pool (this class is the
     ///     <see cref="IScrollingItemPool" />), so a long run doesn't churn the garbage collector. Only
     ///     runs while the game is Playing. Place one in <c>Main</c>; assign the sock + obstacle prefabs.
     /// </summary>
     public class TrackSpawner : MonoBehaviour, IScrollingItemPool {
-        [SerializeField] private Collectible sockPrefab;
-        [SerializeField] private Obstacle[] obstaclePrefabs;
+        [Tooltip("The sock prefab (drag the prefab root; its Collectible can be on a Code child).")]
+        [SerializeField] private GameObject sockPrefab;
+        [Tooltip("Obstacle prefab roots (each needs an Obstacle somewhere in its hierarchy).")]
+        [SerializeField] private GameObject[] obstaclePrefabs;
+
         [SerializeField] private float spawnZ = 40f;
         [SerializeField] private float despawnZ = -10f;
         [SerializeField] private float groundY = 0f;
@@ -27,8 +35,8 @@ namespace _Project.Code.Gameplay {
         [SerializeField] private float sockSpacing = 2.5f;
 
         // Recycled-instance stacks, one per prefab, plus a lookup from instance back to its prefab.
-        private readonly Dictionary<ScrollingItem, Stack<ScrollingItem>> _poolFor = new();
-        private readonly Dictionary<ScrollingItem, ScrollingItem> _prefabOf = new();
+        private readonly Dictionary<GameObject, Stack<ScrollingItem>> _poolFor = new();
+        private readonly Dictionary<ScrollingItem, GameObject> _prefabOf = new();
 
         private float _distanceSinceSpawn;
 
@@ -47,7 +55,7 @@ namespace _Project.Code.Gameplay {
 
         private void SpawnRow() {
             if (obstaclePrefabs != null && obstaclePrefabs.Length > 0 && Random.value < obstacleChance) {
-                Obstacle prefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
+                GameObject prefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
                 SpawnItem(prefab, RandomX(), 0f);
             }
 
@@ -66,9 +74,12 @@ namespace _Project.Code.Gameplay {
             return Random.Range(-limit, limit);
         }
 
-        private void SpawnItem(ScrollingItem prefab, float x, float zOffset) {
-            // Move/show the whole prefab via Body — the script may sit on a child object.
+        private void SpawnItem(GameObject prefab, float x, float zOffset) {
             ScrollingItem item = GetFromPool(prefab);
+            if (item == null) {
+                return;
+            }
+
             item.Configure(this, despawnZ);
             item.Body.position = new Vector3(x, groundY, spawnZ + zOffset);
             item.Body.gameObject.SetActive(true);
@@ -76,7 +87,7 @@ namespace _Project.Code.Gameplay {
 
         // --- Pooling -------------------------------------------------------------
 
-        private ScrollingItem GetFromPool(ScrollingItem prefab) {
+        private ScrollingItem GetFromPool(GameObject prefab) {
             if (!_poolFor.TryGetValue(prefab, out Stack<ScrollingItem> stack)) {
                 stack = new Stack<ScrollingItem>();
                 _poolFor[prefab] = stack;
@@ -90,7 +101,15 @@ namespace _Project.Code.Gameplay {
                 }
             }
 
-            ScrollingItem fresh = Instantiate(prefab);
+            GameObject instance = Instantiate(prefab);
+            ScrollingItem fresh = instance.GetComponentInChildren<ScrollingItem>(true);
+            if (fresh == null) {
+                Debug.LogError($"[TrackSpawner] Prefab '{prefab.name}' has no Collectible/Obstacle " +
+                               "(ScrollingItem) anywhere in it. Skipping.", prefab);
+                Destroy(instance);
+                return null;
+            }
+
             _prefabOf[fresh] = prefab;
             fresh.Body.gameObject.SetActive(false); // Configure + position it before it's shown.
             return fresh;
@@ -102,7 +121,7 @@ namespace _Project.Code.Gameplay {
             }
 
             item.Body.gameObject.SetActive(false);
-            if (_prefabOf.TryGetValue(item, out ScrollingItem prefab) && _poolFor.TryGetValue(prefab, out Stack<ScrollingItem> stack)) {
+            if (_prefabOf.TryGetValue(item, out GameObject prefab) && _poolFor.TryGetValue(prefab, out Stack<ScrollingItem> stack)) {
                 stack.Push(item);
             } else {
                 Destroy(item.Body.gameObject);
