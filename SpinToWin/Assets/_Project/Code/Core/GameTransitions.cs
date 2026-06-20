@@ -1,28 +1,26 @@
 using System.Collections;
-using _Project.Code.UI;
+using _Project.Code.UI.Transitions;
 using CoreUtils.GameEvents;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace _Project.Code.Core {
     /// <summary>
-    ///     Sequences the scene change between the laundromat (menu) scene and the
-    ///     inside-the-machine (gameplay) scene with a camera dolly + fade:
-    ///     entering Playing dollies toward the machine, fades to black, loads the game scene,
-    ///     and fades in; entering MainMenu fades back to the laundromat.
-    ///     Put this on the persistent [Managers] object with the (also persistent)
-    ///     <see cref="ScreenFader" /> assigned.
+    ///     Drives scene changes off the game state: each state that lives in its own scene maps to
+    ///     a scene name, and entering that state covers the screen with the bubble transition,
+    ///     loads the scene while hidden, then reveals. MainMenu → Start, Settings → Settings,
+    ///     Playing → Main. States that are just in-scene overlays (Paused, GameOver) map to nothing
+    ///     and don't trigger a load. Put this on the persistent [Managers] object; the (also
+    ///     persistent) <see cref="ScreenTransition" /> is found via its singleton.
     ///
-    ///     The camera dolly itself is just the menu scene's CameraDirector reacting to
-    ///     Playing (its "Playing" viewpoint = the close-up approach), so there is no
-    ///     cross-scene reference to manage here — we only wait for that blend.
+    ///     The camera no longer moves between framings — each scene is a single fixed shot and
+    ///     the bubbles cover the swap, so there's nothing here to wait on but the transition.
     /// </summary>
     public class GameTransitions : MonoBehaviour {
+        [Header("State → scene names")]
         [SerializeField] private string menuScene = "Start";
+        [SerializeField] private string settingsScene = "Settings";
         [SerializeField] private string gameScene = "Main";
-
-        [Header("Timing")]
-        [SerializeField] private float approachTime = 1.0f;
 
         [Header("Events")]
         [SerializeField] private GameEventString stateEntered;
@@ -41,14 +39,27 @@ namespace _Project.Code.Core {
             }
         }
 
-        private void HandleStateEntered(string stateName) {
-            string activeScene = SceneManager.GetActiveScene().name;
+        /// <summary>The scene a state lives in, or null if the state is just an in-scene overlay.</summary>
+        private string SceneForState(string stateName) {
+            return stateName switch {
+                GameStateNames.MainMenu => menuScene,
+                GameStateNames.Settings => settingsScene,
+                GameStateNames.Playing => gameScene,
+                _ => null
+            };
+        }
 
-            if (stateName == GameStateNames.Playing && activeScene != gameScene) {
-                Run(EnterGame());
-            } else if (stateName == GameStateNames.MainMenu && activeScene != menuScene) {
-                Run(ReturnToMenu());
+        private void HandleStateEntered(string stateName) {
+            string targetScene = SceneForState(stateName);
+            if (string.IsNullOrEmpty(targetScene)) {
+                return;
             }
+
+            if (SceneManager.GetActiveScene().name == targetScene) {
+                return;
+            }
+
+            Run(LoadScene(targetScene));
         }
 
         private void Run(IEnumerator routine) {
@@ -59,35 +70,24 @@ namespace _Project.Code.Core {
             _running = StartCoroutine(routine);
         }
 
-        private IEnumerator EnterGame() {
-            // 1. Let the menu camera dolly toward the washing machine.
-            yield return new WaitForSecondsRealtime(approachTime);
-
-            // 2. Fade to black, 3. load the inside-the-machine scene, 4. fade back in.
-            yield return FadeOut();
-            yield return SceneManager.LoadSceneAsync(gameScene);
-            yield return FadeIn();
+        private IEnumerator LoadScene(string sceneName) {
+            // Cover with bubbles, load the target scene while hidden, then reveal.
+            yield return Cover();
+            yield return SceneManager.LoadSceneAsync(sceneName);
+            yield return Reveal();
 
             _running = null;
         }
 
-        private IEnumerator ReturnToMenu() {
-            yield return FadeOut();
-            yield return SceneManager.LoadSceneAsync(menuScene);
-            yield return FadeIn();
-
-            _running = null;
-        }
-
-        private static IEnumerator FadeOut() {
-            if (ScreenFader.Instance != null) {
-                yield return ScreenFader.Instance.FadeOut();
+        private static IEnumerator Cover() {
+            if (ScreenTransition.Instance != null) {
+                yield return ScreenTransition.Instance.Cover();
             }
         }
 
-        private static IEnumerator FadeIn() {
-            if (ScreenFader.Instance != null) {
-                yield return ScreenFader.Instance.FadeIn();
+        private static IEnumerator Reveal() {
+            if (ScreenTransition.Instance != null) {
+                yield return ScreenTransition.Instance.Reveal();
             }
         }
     }

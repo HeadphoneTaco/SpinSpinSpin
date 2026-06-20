@@ -1,3 +1,4 @@
+using _Project.Code.Settings;
 using UnityEngine;
 
 namespace _Project.Code.Core {
@@ -14,8 +15,19 @@ namespace _Project.Code.Core {
         private AudioSource _musicSource;
         private AudioSource _sfxSource;
 
+        private ISetting<float> _musicVolume;
+        private ISetting<float> _sfxVolume;
+
         public float MusicVolume => musicVolume;
         public float SfxVolume => sfxVolume;
+
+        /// <summary>The music volume as a bindable setting (for UI controls). Backed by the fields above.</summary>
+        public ISetting<float> MusicVolumeSetting =>
+            _musicVolume ??= new DelegateSetting<float>(() => musicVolume, SetMusicVolume);
+
+        /// <summary>The SFX volume as a bindable setting (for UI controls). Backed by the fields above.</summary>
+        public ISetting<float> SfxVolumeSetting =>
+            _sfxVolume ??= new DelegateSetting<float>(() => sfxVolume, SetSfxVolume);
 
         private void Awake() {
             EnsureSources();

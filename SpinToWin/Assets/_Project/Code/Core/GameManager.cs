@@ -60,6 +60,11 @@ namespace _Project.Code.Core {
             ChangeState(GameStateNames.Playing);
         }
 
+        /// <summary>Opens the settings screen (its own scene). Return with <see cref="ReturnToMenu" />.</summary>
+        public void OpenSettings() {
+            ChangeState(GameStateNames.Settings);
+        }
+
         public void Pause() {
             if (IsPlaying) {
                 ChangeState(GameStateNames.Paused);

@@ -1,3 +1,4 @@
+using _Project.Code.Settings;
 using CoreUtils.GameEvents;
 using UnityEngine;
 
@@ -16,9 +17,14 @@ namespace _Project.Code.Core {
         [SerializeField] private GameEventBool highContrastChanged;
 
         private bool _loaded;
+        private ISetting<bool> _highContrast;
 
         /// <summary>Whether high-contrast mode is currently enabled.</summary>
         public bool HighContrast { get; private set; }
+
+        /// <summary>High-contrast as a bindable setting (for UI controls). Backed by the property above.</summary>
+        public ISetting<bool> HighContrastSetting =>
+            _highContrast ??= new DelegateSetting<bool>(() => HighContrast, SetHighContrast);
 
         private void Awake() {
             Load();

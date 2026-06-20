@@ -6,6 +6,7 @@ namespace _Project.Code.Core {
     /// </summary>
     public static class GameStateNames {
         public const string MainMenu = "MainMenu";
+        public const string Settings = "Settings";
         public const string Playing = "Playing";
         public const string Paused = "Paused";
         public const string GameOver = "GameOver";
