@@ -15,7 +15,6 @@ namespace _Project.Code.UI {
         [SerializeField] private Button quitButton;
 
         [Header("Panels")]
-        [Tooltip("Settings panel toggled open by the Settings button. Optional.")]
         [SerializeField] private GameObject settingsPanel;
 
         private void OnEnable() {

@@ -19,11 +19,7 @@ namespace _Project.Code.UI {
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button mainMenuButton;
-
-        [Tooltip("Settings panel opened from the pause menu. Optional.")]
         [SerializeField] private GameObject settingsPanel;
-
-        [Header("Events (GameEventString, payload = state name)")]
         [SerializeField] private GameEventString stateEntered;
         [SerializeField] private GameEventString stateExited;
 

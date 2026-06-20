@@ -12,8 +12,6 @@ namespace _Project.Code.Core {
     /// </summary>
     public class GameStateEventsBridge : MonoBehaviour {
         [SerializeField, AutoFill] private StateMachine stateMachine;
-
-        [Header("Events raised (GameEventString, payload = state name)")]
         [SerializeField] private GameEventString stateEntered;
         [SerializeField] private GameEventString stateExited;
 

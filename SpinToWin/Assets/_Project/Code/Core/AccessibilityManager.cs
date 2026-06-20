@@ -13,7 +13,6 @@ namespace _Project.Code.Core {
     public class AccessibilityManager : MonoBehaviour {
         private const string HighContrastKey = "accessibility.highContrast";
 
-        [Tooltip("Raised whenever high-contrast mode changes (payload = enabled).")]
         [SerializeField] private GameEventBool highContrastChanged;
 
         private bool _loaded;

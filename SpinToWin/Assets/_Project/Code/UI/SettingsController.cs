@@ -1,4 +1,5 @@
 using _Project.Code.Core;
+using CoreUtils.GameEvents;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,19 +16,24 @@ namespace _Project.Code.UI {
         [SerializeField] private Slider musicSlider;
         [SerializeField] private Slider sfxSlider;
 
-        [Header("Value labels (optional, show %)")]
+        [Header("Labels")]
         [SerializeField] private TMP_Text musicValueLabel;
         [SerializeField] private TMP_Text sfxValueLabel;
 
         [Header("Accessibility")]
-        [Tooltip("Toggles high-contrast mode. Optional.")]
         [SerializeField] private Toggle highContrastToggle;
 
         [Header("Buttons")]
-        [Tooltip("Closes/hides this panel. Optional.")]
         [SerializeField] private Button closeButton;
 
+        [Header("Events")]
+        [SerializeField] private GameEventBool settingsViewActive;
+
         private void OnEnable() {
+            if (settingsViewActive != null) {
+                settingsViewActive.Raise(true);
+            }
+
             AudioManager audioManager = GameManager.Instance.Audio;
 
             // Reflect current volumes without firing the change callbacks.
@@ -54,6 +60,10 @@ namespace _Project.Code.UI {
         }
 
         private void OnDisable() {
+            if (settingsViewActive != null) {
+                settingsViewActive.Raise(false);
+            }
+
             if (musicSlider != null) {
                 musicSlider.onValueChanged.RemoveListener(OnMusicChanged);
             }

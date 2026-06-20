@@ -10,7 +10,6 @@ namespace _Project.Code.Core {
     ///     Transition helpers below wrap <see cref="StateMachine.ChangeState(string)" />.
     /// </summary>
     public class GameManager : Singleton<GameManager> {
-        [Tooltip("The CoreUtils StateMachine that owns the game states. Found in children if left empty.")]
         [SerializeField] private StateMachine stateMachine;
 
         private AudioManager _audio;
