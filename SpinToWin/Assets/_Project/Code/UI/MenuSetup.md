@@ -60,6 +60,42 @@ and assign references here.
 3. Click **Play** — the Console logs `[State] entered Playing` (from `DebugStateControls`, if
    present) and the Main scene loads.
 
+## 6. Settings extras
+
+The `SettingsController` now has optional fields:
+
+- **Music/Sfx Value Label** (`TMP_Text`) — shows the volume as a live percentage (e.g. `80%`).
+  Put a TMP label next to each slider and assign it. Leave empty to skip.
+- **High Contrast Toggle** (`Toggle`) — add a UI Toggle, label it "High Contrast", and assign
+  it. It drives `GameManager.Instance.Accessibility` and remembers the choice (PlayerPrefs).
+
+## 7. Pause menu (Main scene)
+
+1. Under the Main scene Canvas, make a `PausePanel` (an Image background + Resume / Settings /
+   Main Menu buttons). Set it **inactive** by default.
+2. Add the **Pause Menu Controller** to a UI object and assign: `Pause Panel`, the three
+   buttons, the optional `Settings Panel`, and the `StateEntered` / `StateExited` events.
+3. The controller shows the panel on the `Paused` state and hides it otherwise. **Esc** (or
+   gamepad **Start**) toggles pause from anywhere in play — it's a code-defined input, no asset
+   wiring needed.
+4. Resume → `Resume()`, Main Menu → `ReturnToMenu()` (loads `Start`).
+
+> Pause doesn't freeze gameplay yet — that's the separate time-control work. For now it blocks
+> spin input and shows the menu.
+
+## 8. High-contrast mode (plumbing only)
+
+The on/off setting, persistence, and broadcast signal exist; the **visual swap layer is not
+built yet** (pending the approach decision). To enable the broadcast:
+
+1. Add an **Accessibility Manager** component to the `[Managers]` object and assign the
+   `HighContrastChanged` event (`ScriptableObjects/Events/HighContrastChanged.asset`).
+2. The Settings toggle already flips it. Once you pick a visual approach, the color-swapping
+   components subscribe to `HighContrastChanged`.
+
+Use the **Accessibility ▸ WCAG Contrast Checker** window to verify any high-contrast palette
+passes AA/AAA before wiring it.
+
 ## Notes
 
 - Buttons use **TextMeshPro**; the first time you add one Unity may prompt to import TMP

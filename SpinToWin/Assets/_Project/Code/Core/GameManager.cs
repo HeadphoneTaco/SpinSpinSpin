@@ -14,12 +14,19 @@ namespace _Project.Code.Core {
         [SerializeField] private StateMachine stateMachine;
 
         private AudioManager _audio;
+        private AccessibilityManager _accessibility;
 
         /// <summary>The CoreUtils state machine driving the game.</summary>
         public StateMachine StateMachine => stateMachine;
 
         /// <summary>Handles music and sound-effect playback. Created on first access.</summary>
         public AudioManager Audio => GetOrAdd(ref _audio);
+
+        /// <summary>
+        ///     Accessibility preferences (high-contrast, etc.). Created on first access; place
+        ///     it on this object and wire its event to enable the broadcast signal.
+        /// </summary>
+        public AccessibilityManager Accessibility => GetOrAdd(ref _accessibility);
 
         /// <summary>Name of the currently active state GameObject, or null if none.</summary>
         public string CurrentStateName => stateMachine != null && stateMachine.CurrentState != null
