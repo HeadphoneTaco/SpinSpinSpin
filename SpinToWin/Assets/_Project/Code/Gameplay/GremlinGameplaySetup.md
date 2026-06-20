@@ -85,11 +85,16 @@ Each item is a prefab **root** with `Code` / `Colliders` / `Mesh` children. Trig
 1. Empty object **`RunDirector`** in `Main` → add **`RunDirector`**:
    - *Base Speed* `10`, *Max Speed* `30`, *Acceleration* `0.4`.
    - Leave *Sock Count Changed* / *Distance Changed* empty for now (those feed a HUD later — §6).
-2. Empty object **`TrackSpawner`** in `Main` → add **`TrackSpawner`**:
-   - *Sock Prefab* → your sock; *Obstacle Prefabs* → drag your obstacle prefab(s) into the list
-     (**if this list is empty, no hazards ever spawn**).
-   - *Spawn Z* `40`, *Despawn Z* `-10`, *Ground Y* `0`, *Half Width* `2.5` (**must match** the gremlin
-     + floor).
+2. Make two **PrefabBuckets** (right-click → Create → *CoreUtils/Bucket/Prefab Bucket*): one for socks,
+   one for obstacles. Point each at its prefab folder (or add prefabs by hand); every prefab in the
+   bucket is spawned at random, which is how multiple sock types show up. **If a bucket is empty, that
+   category never spawns.**
+3. Empty object **`TrackSpawner`** in `Main` → add **`TrackSpawner`**:
+   - *Sock Bucket* → your sock bucket; *Obstacle Bucket* → your obstacle bucket.
+   - *Ground Y* → the height items ride at. Start at the **gremlin's body height** (roughly its capsule
+     centre, e.g. `~1`) so they sit on the floor / float at collection height instead of sinking below
+     it. `0` usually puts centre-pivoted items half under the floor.
+   - *Spawn Z* `40`, *Despawn Z* `-10`, *Half Width* `2.5` (**must match** the gremlin + floor).
    - *Spawn Spacing* `8` (smaller = denser), *Obstacle Chance* `0.55`, *Sock Chance* `0.7`.
    - *Sock Cluster Min/Max* `2`/`4`, *Sock Spacing* `2.5`.
 
@@ -129,5 +134,8 @@ and have a small UI script update a `TMP_Text` from each event's `Event` — sam
   isn't **Is Trigger** (§3).
 - **Items spawn off to the side / past the wall** → `Half Width` differs between gremlin, floor, and
   spawner. Keep all three equal.
-- **No hazards appear** → `TrackSpawner`'s *Obstacle Prefabs* list is empty (§4).
+- **Items sit below the floor (but still ding when collected)** → *Ground Y* on `TrackSpawner` is too
+  low. They're inside the gremlin's scan capsule (so they register) but their pivots are under the
+  floor. Raise *Ground Y* to the gremlin's body height (§4).
+- **No socks or hazards appear** → the matching **PrefabBucket** is empty or unassigned on `TrackSpawner` (§4).
 - **`Spinner.cs`** is the old Spin-to-Win test — delete it once this is in; it's unrelated.
