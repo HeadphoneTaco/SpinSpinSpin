@@ -309,8 +309,9 @@ GameObject:
   m_Component:
   - component: {fileID: 274973620}
   - component: {fileID: 274973621}
+  - component: {fileID: 274973622}
   m_Layer: 5
-  m_Name: SfxControl
+  m_Name: SfxVolumeControl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -390,6 +391,20 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &274973622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274973619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7e79a31aef67d847a8fdbed95913bfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.UI.Settings.SfxVolumeControl
+  slider: {fileID: 274973621}
+  valueLabel: {fileID: 0}
 --- !u!1 &275571149
 GameObject:
   m_ObjectHideFlags: 0
@@ -1035,7 +1050,7 @@ GameObject:
   - component: {fileID: 995243269}
   - component: {fileID: 995243268}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: MenuLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1185,7 +1200,7 @@ Transform:
   m_GameObject: {fileID: 998723702}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.04726, y: -0, z: -6.84452}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1467,7 +1482,7 @@ GameObject:
   - component: {fileID: 1256053547}
   - component: {fileID: 1256053546}
   m_Layer: 5
-  m_Name: VolumeLabel
+  m_Name: MusicLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1938,7 +1953,7 @@ GameObject:
   - component: {fileID: 1639755590}
   - component: {fileID: 1639755589}
   m_Layer: 5
-  m_Name: VolumeControl
+  m_Name: MusicVolumeControl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
