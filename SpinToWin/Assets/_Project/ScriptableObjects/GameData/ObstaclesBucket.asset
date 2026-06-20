@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9905e5f181904194ad6cb66e08c9fccd, type: 3}
+  m_Name: ObstaclesBucket
+  m_EditorClassIdentifier: CoreUtils::CoreUtils.AssetBuckets.PrefabBucket
+  m_BucketName: 
+  m_Sources:
+  - {fileID: 102900000, guid: 74229674e3bd86a4f8eb1652281a9877, type: 3}
+  m_AssetRefs:
+  - Name: prop_obstacle
+    Guid: 90d101df43dbcd84fa86e7ab287058b9
+    Asset: {fileID: 8508633778605861677, guid: 90d101df43dbcd84fa86e7ab287058b9, type: 3}
+  m_ManualUpdate: 0

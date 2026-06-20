@@ -207,7 +207,7 @@ Transform:
   m_GameObject: {fileID: 1013034819}
   serializedVersion: 2
   m_LocalRotation: {x: 0.15120977, y: -0, z: -0, w: 0.9885018}
-  m_LocalPosition: {x: 0, y: 2.59, z: -7.12}
+  m_LocalPosition: {x: 0, y: 4.38, z: -4.57}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -446,9 +446,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3001b5f0855f55c4a8176237bc9e8682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.TrackSpawner
-  sockPrefab: {fileID: 5143570134925344512, guid: 1c059958885c20744bf7868bbf68388b, type: 3}
-  obstaclePrefabs:
-  - {fileID: 8508633778605861677, guid: 90d101df43dbcd84fa86e7ab287058b9, type: 3}
+  sockBucket: {fileID: 11400000, guid: 2fd97146fa4eeb141b2fe3bf79aa7c39, type: 2}
+  obstacleBucket: {fileID: 11400000, guid: 6da83f29c4ac6dc4095083749b63cace, type: 2}
   spawnZ: 40
   despawnZ: -10
   groundY: 0
