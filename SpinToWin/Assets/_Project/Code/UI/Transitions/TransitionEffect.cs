@@ -14,5 +14,19 @@ namespace _Project.Code.UI.Transitions {
 
         /// <summary>Clear the overlay, revealing the screen. Yields until fully clear.</summary>
         public abstract IEnumerator Reveal();
+
+        /// <summary>
+        ///     Stretches this object's RectTransform to fill its parent so the overlay always
+        ///     covers the whole screen — no matter what size the Image was created at. Subclasses
+        ///     call this from Awake (and Reset) so a half-set-up overlay can't leak the swap.
+        /// </summary>
+        protected void StretchToFill() {
+            if (transform is RectTransform rect) {
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
+        }
     }
 }

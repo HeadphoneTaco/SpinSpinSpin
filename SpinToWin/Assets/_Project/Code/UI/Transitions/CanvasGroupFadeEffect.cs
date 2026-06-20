@@ -15,6 +15,7 @@ namespace _Project.Code.UI.Transitions {
 
         private void Reset() {
             canvasGroup = GetComponent<CanvasGroup>();
+            StretchToFill();
         }
 
         private void Awake() {
@@ -22,6 +23,7 @@ namespace _Project.Code.UI.Transitions {
                 canvasGroup = GetComponent<CanvasGroup>();
             }
 
+            StretchToFill();
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
         }
