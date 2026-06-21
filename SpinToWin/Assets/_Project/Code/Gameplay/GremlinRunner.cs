@@ -5,35 +5,34 @@ using UnityEngine.InputSystem;
 
 namespace _Project.Code.Gameplay {
     /// <summary>
-    ///     The sock-gremlin the player drives down the drum. This is a "treadmill" runner: the
-    ///     gremlin holds a fixed forward position (its Z never changes) while the world scrolls
-    ///     toward it (see <see cref="ScrollingItem" />), which is exactly what the fixed drum
-    ///     camera needs. So the gremlin only does two things - steer left/right across the drum
-    ///     and hop. Steering is analog (Temple Run feel): the further you push, the faster it
-    ///     slides, smoothed and clamped to the drum's half-width.
+    ///     The sock-gremlin the player drives down the drum. A "treadmill" runner: the gremlin holds a
+    ///     fixed Z while the world scrolls toward it (see <see cref="ScrollingItem" />), so it only
+    ///     steers left/right across a flat lane and hops. Steering is analog (Temple Run feel): the
+    ///     further you push, the faster it slides, smoothed and clamped to the drum's half-width.
     ///
-    ///     Input is code-defined (no Input Action asset to wire) and live only while the game is
-    ///     in the <see cref="GameStateNames.Playing" /> state, mirroring <c>Spinner</c> and
-    ///     <c>PauseMenuController</c>. While Paused / in menus the gremlin freezes.
+    ///     Input is code-defined and live only in the <see cref="GameStateNames.Playing" /> state,
+    ///     mirroring <c>PauseMenuController</c>. The gremlin scans for overlapping socks/obstacles each
+    ///     frame (see <see cref="ScanForItems" />), so items need no trigger script of their own.
     ///
-    ///     Setup: the <see cref="CharacterController" /> is both the gremlin's collider and its mover,
-    ///     so it must sit on the moving root (Unity won't let those be split onto separate objects).
-    ///     This script may live on the root or on a "Code" child - it finds the controller on itself,
-    ///     its parent, or a child. The gremlin also scans for overlapping socks/obstacles each frame
-    ///     (see <see cref="ScanForItems" />), so items need no trigger script of their own. Assign the
-    ///     <c>StateEntered</c> / <c>StateExited</c> event assets so input follows game state.
+    ///     Setup: a <see cref="CharacterController" /> on the moving root (it's both collider and mover,
+    ///     so it can't be split). The script finds it on itself or anywhere in the gremlin. Needs a
+    ///     floor collider under it to stay grounded. Assign the StateEntered / StateExited events.
     /// </summary>
     public class GremlinRunner : MonoBehaviour {
+        [Header("Steering")]
         [SerializeField] private float steerSpeed = 8f;
         [SerializeField] private float halfWidth = 2.5f;
         [SerializeField] private float steerSmoothing = 12f;
+
+        [Header("Jump")]
         [SerializeField] private float jumpHeight = 2f;
         [SerializeField] private float gravity = -25f;
 
-        [Tooltip("Which layers to scan for socks/obstacles. Default = Everything (filtered to items " +
-                 "that have a ScrollingItem). Put items on an 'Items' layer and set it here to tighten.")]
+        [Header("Item scan")]
+        [Tooltip("Which layers to scan for socks/obstacles. Default = Everything (filtered to ScrollingItem).")]
         [SerializeField] private LayerMask itemMask = ~0;
 
+        [Header("State events")]
         [SerializeField] private GameEventString stateEntered;
         [SerializeField] private GameEventString stateExited;
 
@@ -47,10 +46,8 @@ namespace _Project.Code.Gameplay {
         private bool _inputActive;
 
         private void Awake() {
-            // Controller lives on the moving root, which may be this object, a parent, or a child.
             _controller = GetComponent<CharacterController>();
             if (_controller == null) {
-                // Search the whole gremlin: parent, a sibling 'Colliders' object, or children.
                 _controller = transform.root.GetComponentInChildren<CharacterController>(true);
             }
 
@@ -84,7 +81,6 @@ namespace _Project.Code.Gameplay {
                 stateExited.Event += HandleStateExited;
             }
 
-            // Match whatever state is already active when this scene loads in (we arrive mid-Playing).
             SetInputActive(GameManager.Exists && GameManager.Instance.IsPlaying);
         }
 
@@ -102,7 +98,6 @@ namespace _Project.Code.Gameplay {
         }
 
         private void Update() {
-            // Frozen in menus / pause. Time still flows, but the gremlin shouldn't.
             if (!_inputActive || _controller == null) {
                 return;
             }
@@ -112,9 +107,8 @@ namespace _Project.Code.Gameplay {
             _horizontalVelocity = Mathf.Lerp(_horizontalVelocity, targetVelocity, steerSmoothing * Time.deltaTime);
 
             if (_controller.isGrounded) {
-                // Small downward bias keeps isGrounded reliable between frames.
                 if (_verticalVelocity < 0f) {
-                    _verticalVelocity = -2f;
+                    _verticalVelocity = -2f; // small downward bias keeps isGrounded reliable
                 }
 
                 if (_jumpAction.WasPerformedThisFrame()) {
@@ -132,11 +126,21 @@ namespace _Project.Code.Gameplay {
             ScanForItems();
         }
 
+        /// <summary>Keeps the gremlin inside the drum and kills sideways momentum on contact with the wall.</summary>
+        private void ClampToDrum() {
+            Transform mover = _controller.transform;
+            Vector3 position = mover.position;
+            if (Mathf.Abs(position.x) > halfWidth) {
+                position.x = Mathf.Clamp(position.x, -halfWidth, halfWidth);
+                mover.position = position;
+                _horizontalVelocity = 0f;
+            }
+        }
+
         /// <summary>
         ///     Sweeps the gremlin's own capsule for overlapping socks/obstacles and reports each hit.
         ///     Detection lives here (not on the items) so the items keep their script on `Code` and
-        ///     their collider on `Colliders` with nothing extra - Unity routes trigger messages to the
-        ///     collider's object, which we deliberately sidestep by scanning instead.
+        ///     their collider on `Colliders` with nothing extra.
         /// </summary>
         private void ScanForItems() {
             Transform mover = _controller.transform;
@@ -151,8 +155,6 @@ namespace _Project.Code.Gameplay {
 
             for (int i = 0; i < count; i++) {
                 Collider hit = _itemHits[i];
-                // Script is on `Code`; the collider we hit is on a `Colliders` sibling - so if the
-                // direct parent lookup misses, search the item's whole hierarchy from its root.
                 ScrollingItem item = hit.GetComponentInParent<ScrollingItem>();
                 if (item == null) {
                     item = hit.transform.root.GetComponentInChildren<ScrollingItem>(true);
@@ -161,18 +163,6 @@ namespace _Project.Code.Gameplay {
                 if (item != null) {
                     item.HitByPlayer(this);
                 }
-            }
-        }
-
-        /// <summary>Keeps the gremlin inside the drum and kills sideways momentum on contact with the wall.</summary>
-        private void ClampToDrum() {
-            // Clamp the object the controller moves (the root), not necessarily this script's object.
-            Transform mover = _controller.transform;
-            Vector3 position = mover.position;
-            if (Mathf.Abs(position.x) > halfWidth) {
-                position.x = Mathf.Clamp(position.x, -halfWidth, halfWidth);
-                mover.position = position;
-                _horizontalVelocity = 0f;
             }
         }
 

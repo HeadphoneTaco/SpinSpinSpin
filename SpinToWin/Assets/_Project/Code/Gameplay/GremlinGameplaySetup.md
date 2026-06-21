@@ -91,12 +91,20 @@ Each item is a prefab **root** with `Code` / `Colliders` / `Mesh` children. Trig
    category never spawns.**
 3. Empty object **`TrackSpawner`** in `Main` → add **`TrackSpawner`**:
    - *Sock Bucket* → your sock bucket; *Obstacle Bucket* → your obstacle bucket.
-   - *Ground Y* → the height items ride at. Start at the **gremlin's body height** (roughly its capsule
-     centre, e.g. `~1`) so they sit on the floor / float at collection height instead of sinking below
-     it. `0` usually puts centre-pivoted items half under the floor.
-   - *Spawn Z* `40`, *Despawn Z* `-10`, *Half Width* `2.5` (**must match** the gremlin + floor).
+   - *Lane Count* `6` — items spawn in this many fixed lanes across the drum.
+   - *Player Z* `0` (the gremlin's Z) and *Ground Y* → match the gremlin so items arrive right on it.
+   - *Despawn Z* `-10`, *Half Width* `2.5` (**must match** the gremlin's *Half Width*).
+   - *Radius* `10` and *Sweep Degrees* `180` define the **C** items ride down. Bigger radius = wider
+     sweep and more reaction time; `180` = a full C, less = a gentler hook.
+   - *Squish* `1` deforms the C's height to match the drum: below `1` = flatter, above `1` = taller /
+     more exaggerated (use this to sit the C against Pedro's curved interior).
    - *Spawn Spacing* `8` (smaller = denser), *Obstacle Chance* `0.55`, *Sock Chance* `0.7`.
-   - *Sock Cluster Min/Max* `2`/`4`, *Sock Spacing* `2.5`.
+
+   The **Scene view draws each lane's C as a gizmo** (yellow = the C the item rides, cyan = the arrival
+   line at the gremlin) so you can tune *Radius* / *Sweep Degrees* / *Lane Count* without pressing Play.
+   Per row, one obstacle and one sock drop into two different lanes, so there's always a clear path.
+   Reaction time ≈ arc length (*Radius* × sweep) ÷ speed, so grow *Radius* (or lower `RunDirector`'s
+   *Max Speed* / *Acceleration*) if it feels rushed.
 
 The spawner instantiates its own socks/obstacles at runtime, so **don't leave loose copies sitting in
 the `Main` scene** — delete any, or you'll have a frozen sock parked at the origin. Nothing else
@@ -110,12 +118,33 @@ cross-references in the Inspector; `TrackSpawner` and the items find `RunDirecto
    (watch `RunDirector.SockCount` in the Inspector). Hit an obstacle → state flips to **GameOver**.
 4. **Esc** pauses → the whole belt freezes; resume → it picks up exactly where it was.
 
-## 6. Optional — show the score
+## 6. On-screen HUD (`ScoreHud`)
 
-`RunDirector` already broadcasts `SockCountChanged` and `DistanceChanged` (`GameEventInt`). When you
-want a HUD: make two `GameEventInt` assets in `ScriptableObjects/Events/`, drop them on `RunDirector`,
-and have a small UI script update a `TMP_Text` from each event's `Event` — same listener pattern as
-`PauseMenuController`. Not needed to play.
+1. On the gameplay Canvas in `Main`, add three **TMP Text** objects: a sock counter, a timer, and a
+   centred outcome banner.
+2. Add **`ScoreHud`** to the Canvas and drag those three texts into *Socks Text* / *Time Text* /
+   *Outcome Text*. It polls `RunDirector` each frame - no event wiring.
+3. It auto-adapts to the mode: the timer hides itself in CollectSocks, the sock counter shows
+   `X / target` in CollectSocks (just `X` in SurviveTime), and the banner shows **YOU WIN!** /
+   **CRASHED!** when the run ends.
+
+## 7. Two playstyles + curved floor
+
+**Switch playstyle on `RunDirector` → *Win Mode*:**
+- **SurviveTime** - visible countdown; survive *Target Time* (default 60s) to win. Socks are score only.
+- **CollectSocks** - timer hidden; collect *Target Socks* (default 25) to win. The hidden timer tightens
+  spawn spacing from full toward *Min Spawn Spacing Scale* over *Spawn Ramp Time* (items arrive faster).
+
+In both, hitting an obstacle loses the run. Win and loss both drop into the existing **GameOver** state;
+the HUD banner says which. So tomorrow's two prototypes are one flip of the *Win Mode* dropdown.
+
+**The C-curve (items only):** socks and obstacles trace a **C** — they enter high near the top, sweep
+out and around the drum wall, and come down to the gremlin at the bottom (`ApproachCurve`, a semicircle
+in the approach Z / height Y plane). Items advance along it by *angle*, so the path doubles back in Z
+the way a C does. Tune `TrackSpawner` *Radius* (size of the C) and *Sweep Degrees* (`180` = full C).
+Lane (X) is separate so the player steers across the C's bottom. The **gremlin moves flat** and items
+arrive at *Ground Y*. Lower *Sweep Degrees* toward `90` for a gentler quarter-hook, or use *Squish* to
+flatten / exaggerate the C's height to match the drum interior.
 
 ## Gotchas
 

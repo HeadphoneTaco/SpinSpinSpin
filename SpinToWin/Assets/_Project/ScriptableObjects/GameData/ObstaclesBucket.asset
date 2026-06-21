@@ -16,7 +16,13 @@ MonoBehaviour:
   m_Sources:
   - {fileID: 102900000, guid: 74229674e3bd86a4f8eb1652281a9877, type: 3}
   m_AssetRefs:
-  - Name: prop_obstacle
+  - Name: obstacle_wallet
+    Guid: 5e8c1d7656ea44449a39e25568d5b157
+    Asset: {fileID: 6355736576099294460, guid: 5e8c1d7656ea44449a39e25568d5b157, type: 3}
+  - Name: obstacle_paddle
     Guid: 90d101df43dbcd84fa86e7ab287058b9
     Asset: {fileID: 8508633778605861677, guid: 90d101df43dbcd84fa86e7ab287058b9, type: 3}
+  - Name: obstacle_keys
+    Guid: adae89f335b520a4f9bebdf711e88c8a
+    Asset: {fileID: 4118287899096396789, guid: adae89f335b520a4f9bebdf711e88c8a, type: 3}
   m_ManualUpdate: 0

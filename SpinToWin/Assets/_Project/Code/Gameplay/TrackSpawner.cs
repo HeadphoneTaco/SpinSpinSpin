@@ -5,73 +5,101 @@ using UnityEngine;
 
 namespace _Project.Code.Gameplay {
     /// <summary>
-    ///     Feeds the belt. Spawns socks and obstacles out ahead of the gremlin at a steady spacing in
-    ///     world units (distance-based, not time-based, so density stays honest as the run speeds up),
-    ///     scatters them across the drum width, and lets <see cref="ScrollingItem" /> carry them home.
+    ///     Feeds the belt. Drops socks and obstacles into <see cref="laneCount" /> fixed lanes across the
+    ///     drum at a steady spacing in world units (distance-based, so density stays honest as the run
+    ///     speeds up). Each item enters high and traces a "C" down the drum wall to the gremlin via
+    ///     <see cref="ApproachCurve" />; side-to-side lane (X) is separate so the player can steer.
     ///
-    ///     Sock/obstacle variety comes from CoreUtils <see cref="PrefabBucket" />s: point a bucket at a
-    ///     folder of sock prefabs and every type in it is picked from at random. Prefabs are referenced
-    ///     as plain GameObjects (the prefab root), so the Code / Colliders / Mesh split is fine - the
-    ///     <see cref="Collectible" /> / <see cref="Obstacle" /> script can sit on a `Code` child, and the
-    ///     spawner resolves the <see cref="ScrollingItem" /> from the instance's children at spawn time.
-    ///
-    ///     Spent items are recycled through a small per-prefab pool (this class is the
-    ///     <see cref="IScrollingItemPool" />), so a long run doesn't churn the garbage collector. Only
-    ///     runs while the game is Playing. Place one in <c>Main</c>; assign the sock + obstacle buckets.
+    ///     Variety comes from CoreUtils <see cref="PrefabBucket" />s (one for socks, one for obstacles).
+    ///     Spacing is scaled by <see cref="RunDirector.SpawnSpacingScale" /> so CollectSocks mode ramps
+    ///     up frequency over time. Spent items recycle through a small per-prefab pool. Only runs while
+    ///     Playing. The Scene-view gizmo draws each lane's C so you can tune it without pressing Play.
     /// </summary>
     public class TrackSpawner : MonoBehaviour, IScrollingItemPool {
-        [Tooltip("PrefabBucket of sock prefabs (CoreUtils/Bucket/Prefab Bucket). One is picked at random per cluster.")]
+        [Header("Prefabs (PrefabBuckets)")]
         [SerializeField] private PrefabBucket sockBucket;
-        [Tooltip("PrefabBucket of obstacle prefabs. One is picked at random per row.")]
         [SerializeField] private PrefabBucket obstacleBucket;
 
-        [SerializeField] private float spawnZ = 40f;
-        [SerializeField] private float despawnZ = -10f;
-        [Tooltip("World Y the items ride at. Lift this to the gremlin's body height so they sit on the " +
-                 "floor / float at collection height rather than sinking below it.")]
+        [Header("Track shape")]
+        [Tooltip("Z the gremlin runs at; the bottom of every C sits here.")]
+        [SerializeField] private float playerZ = 0f;
+        [Tooltip("Height items arrive at - the gremlin's run height.")]
         [SerializeField] private float groundY = 0f;
+        [Tooltip("Z behind the gremlin where missed items are recycled.")]
+        [SerializeField] private float despawnZ = -10f;
+        [Tooltip("Half the drum width; the outermost lanes sit here.")]
         [SerializeField] private float halfWidth = 2.5f;
+        [Tooltip("Number of lanes across the drum.")]
+        [SerializeField] private int laneCount = 6;
+
+        [Header("The C-curve (items ride this down to the player)")]
+        [Tooltip("Radius of the C. Bigger = wider sweep and more reaction time.")]
+        [SerializeField] private float radius = 10f;
+        [Tooltip("How much of the circle to trace. 180 = a full C; less = a gentler hook.")]
+        [SerializeField] private float sweepDegrees = 180f;
+        [Tooltip("Vertical squish of the C: 1 = round, below 1 = flatter, above 1 = taller / exaggerated.")]
+        [SerializeField] private float squish = 1f;
+
+        [Header("Pacing")]
+        [Tooltip("World-units between spawn rows. Smaller = denser track.")]
         [SerializeField] private float spawnSpacing = 8f;
         [Range(0f, 1f)] [SerializeField] private float obstacleChance = 0.55f;
         [Range(0f, 1f)] [SerializeField] private float sockChance = 0.7f;
-        [SerializeField] private int sockClusterMin = 2;
-        [SerializeField] private int sockClusterMax = 4;
-        [SerializeField] private float sockSpacing = 2.5f;
 
-        // Recycled-instance stacks, one per prefab, plus a lookup from instance back to its prefab.
         private readonly Dictionary<GameObject, Stack<ScrollingItem>> _poolFor = new();
         private readonly Dictionary<ScrollingItem, GameObject> _prefabOf = new();
 
         private float _distanceSinceSpawn;
+
+        private ApproachCurve Curve => new ApproachCurve {
+            groundY = groundY,
+            playerZ = playerZ,
+            radius = radius,
+            sweepDegrees = sweepDegrees,
+            squish = squish
+        };
 
         private void Update() {
             if (!GameManager.Exists || !GameManager.Instance.IsPlaying || RunDirector.Instance == null) {
                 return;
             }
 
-            // March forward by however far the belt moved this frame, dropping a row each spacing.
+            float spacing = Mathf.Max(0.5f, spawnSpacing * RunDirector.Instance.SpawnSpacingScale);
             _distanceSinceSpawn += RunDirector.Instance.Speed * Time.deltaTime;
-            while (_distanceSinceSpawn >= spawnSpacing) {
-                _distanceSinceSpawn -= spawnSpacing;
+            while (_distanceSinceSpawn >= spacing) {
+                _distanceSinceSpawn -= spacing;
                 SpawnRow();
             }
         }
 
         private void SpawnRow() {
+            int lanes = Mathf.Max(1, laneCount);
+
+            // An obstacle and a sock land in two different lanes; either may sit the row out.
+            int obstacleLane = Random.Range(0, lanes);
+            int sockLane = lanes > 1
+                ? (obstacleLane + 1 + Random.Range(0, lanes - 1)) % lanes
+                : 0;
+
             GameObject obstacle = RandomPrefab(obstacleBucket);
             if (obstacle != null && Random.value < obstacleChance) {
-                SpawnItem(obstacle, RandomX(), 0f);
+                SpawnItem(obstacle, obstacleLane);
             }
 
             GameObject sock = RandomPrefab(sockBucket);
             if (sock != null && Random.value < sockChance) {
-                float x = RandomX();
-                int count = Random.Range(sockClusterMin, sockClusterMax + 1);
-                for (int i = 0; i < count; i++) {
-                    // Stagger socks further ahead so they arrive as a collectible line of one type.
-                    SpawnItem(sock, x, i * sockSpacing);
-                }
+                SpawnItem(sock, sockLane);
             }
+        }
+
+        /// <summary>World X of a lane centre, spread evenly across the drum width.</summary>
+        private float LaneX(int lane) {
+            int lanes = Mathf.Max(1, laneCount);
+            if (lanes == 1) {
+                return 0f;
+            }
+
+            return Mathf.Lerp(-halfWidth, halfWidth, lane / (float)(lanes - 1));
         }
 
         private static GameObject RandomPrefab(PrefabBucket bucket) {
@@ -83,19 +111,18 @@ namespace _Project.Code.Gameplay {
             return items.Length > 0 ? items[Random.Range(0, items.Length)] : null;
         }
 
-        private float RandomX() {
-            float limit = halfWidth * 0.9f;
-            return Random.Range(-limit, limit);
-        }
-
-        private void SpawnItem(GameObject prefab, float x, float zOffset) {
+        private void SpawnItem(GameObject prefab, int lane) {
             ScrollingItem item = GetFromPool(prefab);
             if (item == null) {
                 return;
             }
 
-            item.Configure(this, despawnZ);
-            item.Body.position = new Vector3(x, groundY, spawnZ + zOffset);
+            ApproachCurve curve = Curve;
+            Vector2 start = curve.PointAt(curve.StartAngle); // (z, y) at the top of the C
+            float x = LaneX(lane);
+
+            item.Configure(this, despawnZ, curve);
+            item.Body.position = new Vector3(x, start.y, start.x);
             item.Body.gameObject.SetActive(true);
         }
 
@@ -107,7 +134,6 @@ namespace _Project.Code.Gameplay {
                 _poolFor[prefab] = stack;
             }
 
-            // Pop any still-valid recycled instance (already inactive from Release).
             while (stack.Count > 0) {
                 ScrollingItem recycled = stack.Pop();
                 if (recycled != null) {
@@ -125,7 +151,7 @@ namespace _Project.Code.Gameplay {
             }
 
             _prefabOf[fresh] = prefab;
-            fresh.Body.gameObject.SetActive(false); // Configure + position it before it's shown.
+            fresh.Body.gameObject.SetActive(false);
             return fresh;
         }
 
@@ -139,6 +165,41 @@ namespace _Project.Code.Gameplay {
                 stack.Push(item);
             } else {
                 Destroy(item.Body.gameObject);
+            }
+        }
+
+        // --- Scene-view visualisation -------------------------------------------
+
+        // Draws each lane's C-curve so the track is tunable without pressing Play.
+        // Yellow = the C each item rides; cyan = the arrival line at the gremlin.
+        private void OnDrawGizmos() {
+            int lanes = Mathf.Max(1, laneCount);
+            ApproachCurve curve = Curve;
+
+            Gizmos.color = new Color(1f, 0.85f, 0.2f, 0.9f);
+            for (int i = 0; i < lanes; i++) {
+                float x = LaneX(i);
+                DrawC(x, curve);
+                Vector2 start = curve.PointAt(curve.StartAngle);
+                Gizmos.DrawSphere(new Vector3(x, start.y, start.x), 0.18f);
+            }
+
+            Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.9f);
+            Gizmos.DrawLine(new Vector3(-halfWidth, groundY, playerZ), new Vector3(halfWidth, groundY, playerZ));
+        }
+
+        private void DrawC(float x, ApproachCurve curve) {
+            const int steps = 28;
+            Vector3 prev = Vector3.zero;
+            for (int s = 0; s <= steps; s++) {
+                float phi = Mathf.Lerp(curve.StartAngle, 0f, s / (float)steps);
+                Vector2 zy = curve.PointAt(phi);
+                Vector3 p = new Vector3(x, zy.y, zy.x);
+                if (s > 0) {
+                    Gizmos.DrawLine(prev, p);
+                }
+
+                prev = p;
             }
         }
     }

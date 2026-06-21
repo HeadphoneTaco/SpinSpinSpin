@@ -4,35 +4,38 @@ using UnityEngine;
 namespace _Project.Code.Gameplay {
     /// <summary>
     ///     A pool that can reclaim a spent <see cref="ScrollingItem" />. Implemented by
-    ///     <see cref="TrackSpawner" /> so items can return themselves once they scroll off-screen
-    ///     or get collected, instead of being destroyed every time.
+    ///     <see cref="TrackSpawner" /> so items can return themselves once they leave the track or get
+    ///     collected, instead of being destroyed every time.
     /// </summary>
     public interface IScrollingItemPool {
         void Release(ScrollingItem item);
     }
 
     /// <summary>
-    ///     Base class for anything that rides the drum toward the gremlin - socks to grab, hazards
-    ///     to dodge. Think of it as the conveyor belt plus the chute at the end: this class handles
-    ///     the moving and the disappearing; each subclass only says what happens when the gremlin
-    ///     reaches it (<see cref="OnHitPlayer" />).
+    ///     Base class for anything that rides the drum toward the gremlin - socks to grab, hazards to
+    ///     dodge. This class moves the item and recycles it; each subclass only says what happens on
+    ///     contact (<see cref="OnHitPlayer" />).
     ///
-    ///     Movement uses <see cref="RunDirector.Speed" /> so everything on the belt speeds up together
-    ///     as the run heats up. With no director present (e.g. testing in the Playground scene) it
-    ///     falls back to <see cref="fallbackSpeed" />. Items freeze whenever the game isn't Playing.
+    ///     When configured with an <see cref="ApproachCurve" />, the item traces a "C" down the drum
+    ///     wall: it advances along the arc by angle at <see cref="RunDirector.Speed" /> until it reaches
+    ///     the gremlin, then slides straight out the back to despawn. With no director it falls back to
+    ///     <see cref="fallbackSpeed" />. Items freeze whenever the game isn't Playing.
     ///
-    ///     Code / Colliders / Mesh split: this script lives on the `Code` child; the trigger collider
-    ///     and kinematic Rigidbody live on a `Colliders` sibling (no script there). Two things make
-    ///     that work: it moves <see cref="Body" /> (the prefab root), not just its own transform, so
-    ///     the whole prefab rides the belt; and the gremlin itself scans for overlapping items and
-    ///     calls <see cref="HitByPlayer" />, so no trigger script is needed on the collider object.
+    ///     Code / Colliders / Mesh split: this script lives on the `Code` child; the trigger collider +
+    ///     kinematic Rigidbody live on a `Colliders` sibling (no script there). It moves
+    ///     <see cref="Body" /> (the prefab root) so the whole prefab rides along, and the gremlin scans
+    ///     for overlaps and calls <see cref="HitByPlayer" /> - so no trigger script is needed on the item.
     /// </summary>
     public abstract class ScrollingItem : MonoBehaviour {
         [SerializeField] private float fallbackSpeed = 10f;
         [SerializeField] private Transform body;
+
         private IScrollingItemPool _pool;
         private float _despawnZ = -10f;
         private bool _consumed;
+        private ApproachCurve _curve;
+        private bool _hasCurve;
+        private float _phi; // current angle along the C (StartAngle -> 0)
 
         /// <summary>The transform that rides the belt - the prefab root, even when this script is on a child.</summary>
         public Transform Body { get; private set; }
@@ -48,12 +51,15 @@ namespace _Project.Code.Gameplay {
         }
 
         /// <summary>
-        ///     Wires the item to its pool and tells it how far back to ride before recycling.
-        ///     Called by the spawner right after positioning, before the item is shown.
+        ///     Wires the item to its pool, its recycle distance, and the C-arc it rides. Resets the item
+        ///     to the start of the arc. Called by the spawner right after positioning, before it shows.
         /// </summary>
-        public void Configure(IScrollingItemPool pool, float despawnZ) {
+        public void Configure(IScrollingItemPool pool, float despawnZ, ApproachCurve curve) {
             _pool = pool;
             _despawnZ = despawnZ;
+            _curve = curve;
+            _hasCurve = true;
+            _phi = curve.StartAngle;
         }
 
         protected virtual void Update() {
@@ -64,9 +70,25 @@ namespace _Project.Code.Gameplay {
             }
 
             float speed = RunDirector.Instance != null ? RunDirector.Instance.Speed : fallbackSpeed;
-            Body.position += Vector3.back * (speed * Time.deltaTime);
+            Vector3 p = Body.position;
 
-            if (Body.position.z <= _despawnZ) {
+            if (_hasCurve && _curve.radius > 0f && _phi > 0f) {
+                // Sweep down the C by angle; keep the lane (x) we spawned in.
+                _phi -= _curve.AngularStep(speed, Time.deltaTime);
+                Vector2 zy = _curve.PointAt(Mathf.Max(_phi, 0f));
+                p.z = zy.x;
+                p.y = zy.y;
+            } else {
+                // Off the arc (reached the player, or no curve): slide straight out the back.
+                p.z -= speed * Time.deltaTime;
+                if (_hasCurve) {
+                    p.y = _curve.groundY;
+                }
+            }
+
+            Body.position = p;
+
+            if (p.z <= _despawnZ) {
                 Despawn();
             }
         }
