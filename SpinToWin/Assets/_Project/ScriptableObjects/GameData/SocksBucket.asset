@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9905e5f181904194ad6cb66e08c9fccd, type: 3}
+  m_Name: SocksBucket
+  m_EditorClassIdentifier: CoreUtils::CoreUtils.AssetBuckets.PrefabBucket
+  m_BucketName: 
+  m_Sources:
+  - {fileID: 102900000, guid: 350501081e08ed54aa83a90e67c5a4a5, type: 3}
+  m_AssetRefs:
+  - Name: sock_plain
+    Guid: 1c059958885c20744bf7868bbf68388b
+    Asset: {fileID: 5143570134925344512, guid: 1c059958885c20744bf7868bbf68388b, type: 3}
+  - Name: sock_gold
+    Guid: 24a57240af5a6dd4b9f5dd9bd50866c8
+    Asset: {fileID: 6654956443312491039, guid: 24a57240af5a6dd4b9f5dd9bd50866c8, type: 3}
+  m_ManualUpdate: 0

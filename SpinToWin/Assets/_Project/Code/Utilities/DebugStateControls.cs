@@ -1,23 +1,27 @@
 using _Project.Code.Core;
-using _Project.Code.Core.Enums;
+using CoreUtils.GameEvents;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace _Project.Code.Utilities {
     /// <summary>
     ///     Dev-only helper for driving the game state from the keyboard so the flow can be
-    ///     tested without building out the menus. Also logs every state transition.
+    ///     tested without building out the menus. Also logs each state entered.
     ///     Remove (or disable) before shipping.
     ///     Keys: 1 = Start, 2 = Toggle Pause, 3 = End Game, 0 = Main Menu.
     /// </summary>
     public class DebugStateControls : MonoBehaviour {
+        [SerializeField] private GameEventString stateEntered;
+
         private void OnEnable() {
-            GameManager.Instance.State.OnStateChanged += LogStateChange;
+            if (stateEntered != null) {
+                stateEntered.Event += LogStateEntered;
+            }
         }
 
         private void OnDisable() {
-            if (GameManager.Exists) {
-                GameManager.Instance.State.OnStateChanged -= LogStateChange;
+            if (stateEntered != null) {
+                stateEntered.Event -= LogStateEntered;
             }
         }
 
@@ -32,21 +36,21 @@ namespace _Project.Code.Utilities {
                 return;
             }
 
-            StateManager state = GameManager.Instance.State;
+            GameManager game = GameManager.Instance;
 
             if (keyboard.digit1Key.wasPressedThisFrame) {
-                state.StartGame();
+                game.StartGame();
             } else if (keyboard.digit2Key.wasPressedThisFrame) {
-                state.TogglePause();
+                game.TogglePause();
             } else if (keyboard.digit3Key.wasPressedThisFrame) {
-                state.EndGame();
+                game.EndGame();
             } else if (keyboard.digit0Key.wasPressedThisFrame) {
-                state.ReturnToMenu();
+                game.ReturnToMenu();
             }
         }
 
-        private static void LogStateChange(GameState previous, GameState current) {
-            Debug.Log($"[State] {previous} -> {current}");
+        private static void LogStateEntered(string stateName) {
+            Debug.Log($"[State] entered {stateName}");
         }
     }
 }

@@ -1,13 +1,13 @@
 using _Project.Code.Core;
-using _Project.Code.Core.Enums;
+using CoreUtils.GameEvents;
 using UnityEngine;
 
 namespace _Project.Code.Gameplay {
     /// <summary>
     ///     Drives music/SFX off the game state: menu music in MainMenu, gameplay music in
-    ///     Playing, and a stinger on GameOver. Reacts to <see cref="StateManager.OnStateChanged" />
-    ///     so it stays decoupled from whatever triggers the transitions. Drop it on any
-    ///     persistent object and assign clips in the inspector.
+    ///     Playing, and a stinger on GameOver. Reacts to the StateEntered GameEvent, so it
+    ///     stays decoupled from the state machine. Assign the event and the clips, and drop
+    ///     one in each scene (menu clip in the menu scene, gameplay clip in the game scene).
     /// </summary>
     public class StateAudio : MonoBehaviour {
         [Header("Music")]
@@ -17,37 +17,40 @@ namespace _Project.Code.Gameplay {
         [Header("Stingers")]
         [SerializeField] private AudioClip gameOverSfx;
 
-        private void OnEnable() {
-            StateManager state = GameManager.Instance.State;
-            state.OnStateChanged += HandleStateChanged;
-            // Apply audio for whatever state we start in.
-            ApplyState(state.CurrentState);
-        }
+        [Header("Events")]
+        [SerializeField] private GameEventString stateEntered;
 
-        private void OnDisable() {
+        private void OnEnable() {
+            if (stateEntered != null) {
+                stateEntered.Event += ApplyState;
+            }
+
+            // Apply audio for whatever state is already active (e.g. after a scene load).
             if (GameManager.Exists) {
-                GameManager.Instance.State.OnStateChanged -= HandleStateChanged;
+                ApplyState(GameManager.Instance.CurrentStateName);
             }
         }
 
-        private void HandleStateChanged(GameState previous, GameState current) {
-            ApplyState(current);
+        private void OnDisable() {
+            if (stateEntered != null) {
+                stateEntered.Event -= ApplyState;
+            }
         }
 
-        private void ApplyState(GameState state) {
+        private void ApplyState(string stateName) {
             AudioManager audioManager = GameManager.Instance.Audio;
 
-            switch (state) {
-                case GameState.MainMenu:
+            switch (stateName) {
+                case GameStateNames.MainMenu:
                     audioManager.PlayMusic(menuMusic);
                     break;
-                case GameState.Playing:
+                case GameStateNames.Playing:
                     audioManager.PlayMusic(gameplayMusic);
                     break;
-                case GameState.Paused:
+                case GameStateNames.Paused:
                     // Leave music playing; time control handles the freeze separately.
                     break;
-                case GameState.GameOver:
+                case GameStateNames.GameOver:
                     audioManager.StopMusic();
                     audioManager.PlaySfx(gameOverSfx);
                     break;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace _Project.Code.Core {
     /// <summary>
-    ///     Minimal generic MonoBehaviour singleton for the jam. Access via <c>T.Instance</c>.
+    ///     Minimal generic MonoBehaviour singleton. Access via <c>T.Instance</c>.
     ///     If no instance is placed in the scene, one is created automatically on first
     ///     access. Survives scene loads (DontDestroyOnLoad), and a duplicate that sneaks
     ///     into a scene destroys itself.
@@ -43,6 +43,13 @@ namespace _Project.Code.Core {
 
             _instance = (T)this;
             _isQuitting = false;
+
+            // DontDestroyOnLoad only works on root objects, so detach if we were placed
+            // under a parent in the scene.
+            if (transform.parent != null) {
+                transform.SetParent(null);
+            }
+
             DontDestroyOnLoad(gameObject);
         }
 
