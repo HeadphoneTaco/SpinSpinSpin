@@ -46,45 +46,65 @@ and a matching `ISetting<float>` on the manager — no existing file changes.
 
 That's the whole menu — no controller object, each button carries its own one-line intent.
 
-## 3. Settings scene (`Settings.unity`)
+## 3. Settings panel — one shared overlay (used by main menu *and* pause)
 
-Settings is its own scene (see the Build Settings step in `Code/Core/StateMachineSetup.md`). It
-does **not** get an `[Managers]` object — those persist from `Start`, so the controls still reach
-`GameManager.Instance`.
+There is **one** settings menu, built once as a **`SettingsPanel` prefab** and dropped into both the
+`Start` scene (opened from the main menu) and the `Main` scene (opened from pause). It is an
+**in-scene overlay**, not a separate scene — pause can't load a Settings *scene* or it would unload
+`Main` and end the run. The old `Settings.unity` is retired (delete it / remove from Build Settings;
+`GameManager.OpenSettings()` and the `Settings` state are just left unused — no harm).
 
-1. Create the scene (**File → New Scene**, save as `Settings` next to `Start`). Add a **Camera**
-   pointed at Mina's detergent-bottle UI, and a **Canvas** (which also creates an **EventSystem** —
-   keep it). Set the Canvas Scaler to **Scale With Screen Size**.
-2. Build the controls on Mina's bottle art:
-   - Two sliders (**UI → Slider**) — **Min 0, Max 1, Whole Numbers off**. Add **Music Volume
-     Control** to one and **Sfx Volume Control** to the other (slider auto-fills); optionally
-     assign each a `Value Label` (TMP) for the live %.
-   - A **Toggle** for high contrast → add **High Contrast Control** (auto-fills).
-   - A **Back** button (TextMeshPro) → add **`GameStateButton`**, `Action` = **MainMenu**. This
-     returns to `Start` through the bubble transition. (Label it "Resume"/"Back" to taste.)
-3. Add the scene to **Build Settings** (see the StateMachineSetup recipe).
+**Build the prefab once:**
 
-> No `SettingsController` and no panel toggling — the scene *is* the settings screen, and each
-> control binds itself.
+1. Under a Canvas, make `SettingsPanel` with Mina's settings art as the background image. Anchor the
+   art **center** at the correct size — a *stretch* pivot offsets it (the same bug you hit on the
+   pause art). Set `SettingsPanel` **inactive** by default.
+2. Add the controls, positioned over the painted art (same transparent-over-art trick as the pause
+   buttons wherever the art already draws the control):
+   - Two **Sliders** (Min 0, Max 1, Whole Numbers off) → `Music Volume Control` / `Sfx Volume
+     Control`. Optional `Value Label` (TMP) for the live %.
+   - A **Toggle** → `High Contrast Control`.
+   - A **bottom/exit button** (see below).
+3. Drag `SettingsPanel` into your Prefabs folder, then place an instance in **both** `Start` and `Main`.
+
+**The swappable bottom button.** Because the panel is an overlay, *closing* it reveals whatever
+opened it. Choose per instance:
+
+- **Back to caller** — `PanelButton`, `Action = Hide`, `Target Panel = SettingsPanel`. Hiding reveals
+  the main menu (in `Start`) or the pause menu (in `Main`) underneath, no extra logic.
+- **Straight to main menu** — if the pause instance's exit should bail all the way out, swap that one
+  button to a `GameStateButton`, `Action = MainMenu`.
+
+So "main menu vs back to pause" is simply *which component sits on that instance's bottom button* —
+override it on the `Main` prefab instance if it should differ from `Start`.
+
+**Open it:**
+
+- Main menu `Settings` button → `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`
+  (replaces the old `GameStateButton = Settings`).
+- Pause `Settings` button → `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`.
+
+The controls reach `GameManager.Instance.Audio` / `.Accessibility` (persistent from `Start`), so the
+same prefab works in both scenes with no per-scene wiring.
 
 ## 4. How it connects at runtime
 
 - Every nav button is a `GameStateButton` → it calls a `GameManager` transition (e.g.
   `OpenSettings()` / `StartGame()` / `ReturnToMenu()`), which changes state.
-- `GameTransitions` (on the persistent `[Managers]`) maps the new state to its scene and plays the
-  bubble transition: cover → load scene → reveal. `MainMenu → Start`, `Settings → Settings`,
-  `Playing → Main`.
-- `GameManager` lives on `[Managers]` in `Start` and persists across scenes, so the Settings
-  scene's controls reach `GameManager.Instance.Audio` / `.Accessibility` with no setup of their own.
+- `GameTransitions` (on the persistent `[Managers]`) maps a state to its scene and plays the bubble
+  transition: cover → load scene → reveal. `MainMenu → Start`, `Playing → Main`. (Settings is now an
+  in-scene overlay panel, not a scene, so it doesn't route through here.)
+- `GameManager` lives on `[Managers]` in `Start` and persists across scenes, so the settings
+  panel's controls reach `GameManager.Instance.Audio` / `.Accessibility` with no setup of their own.
 - **Volume sliders** → `MusicVolumeControl` / `SfxVolumeControl` read & write the volume settings,
-  initialised to the current values when the Settings scene loads.
+  initialised to the current values when the panel opens.
 - **Quit** → exits the build (and stops Play mode in the editor).
 
 ## 5. Quick test
 
 1. Press **Play** from the `Start` scene.
-2. Click **Settings** → bubbles sweep, the `Settings` scene loads; drag the sliders — volumes update
-   live on the AudioManager. Click **Back** → bubbles sweep back to `Start`.
+2. Click **Settings** → the settings overlay opens; drag the sliders — volumes update live. Click
+   the bottom button → the overlay closes back to the menu.
 3. Click **Play** — the Console logs `[State] entered Playing` (from `DebugStateControls`, if
    present) and the `Main` scene loads.
 
@@ -102,80 +122,93 @@ does **not** get an `[Managers]` object — those persist from `Start`, so the c
 
 ## 7. Pause menu — **`Main` (gameplay) scene**
 
-(Sections 1–6 build the main menu + settings in the **`Start`** / **`Settings`** scenes. The pause
+(Sections 1–6 build the main menu + the shared settings overlay in the **`Start`** scene. The pause
 menu lives in the **`Main`** scene. See `Code/Core/StateMachineSetup.md` for the per-scene map.)
 
-**What already works (no building needed):** `GameManager.Pause/Resume/TogglePause`, the `Paused`
-state, and `PauseMenuController` (auto show/hide + **Esc**/gamepad **Start** toggle). And gameplay
-genuinely **freezes** while paused: `GremlinRunner`, `RunDirector`, `ScrollingItem`, and
-`TrackSpawner` each gate their `Update` on `GameManager.Instance.IsPlaying`, which is false in
-`Paused` — so movement, scroll, spawning, and the timer all halt. (No `Time.timeScale` trick; the
-state gate is the freeze.) Music keeps playing by design (`StateAudio` leaves it alone on `Paused`).
+**What already works in code (no scripting needed):** `GameManager.Pause/Resume/TogglePause`, the
+`Paused` state, and `PauseMenuController` (auto show/hide + **Esc**/gamepad **Start** toggle).
+Gameplay genuinely **freezes** while paused — `GremlinRunner`, `RunDirector`, `ScrollingItem`, and
+`TrackSpawner` all gate `Update` on `IsPlaying`, which is false in `Paused`. Music keeps playing by
+design. **Resuming plays a 3-2-1 countdown:** the game stays frozen while the count runs, then
+`PauseMenuController` calls `Resume()` to enter `Playing`. Every resume path (the button and Esc)
+goes through it. (No Restart button — that was removed.)
 
-What you build in the editor is the **panel and its buttons**. Like the rest of the UI, each button
-is one self-contained component (`GameStateButton` for state changes, `PanelButton` for show/hide),
-so the controller just owns visibility + the Esc toggle.
+This pause screen uses **Mina's painted art** for its look, with **invisible buttons placed over the
+painted ones** to catch the clicks. So you build: the art image, three transparent buttons, the
+countdown number, and the controller wiring.
 
-### 7.1 The pause panel
+### 7.1 The art background
 
-1. Under the `Main` scene's **Canvas**, create an empty `PausePanel`.
-   - Add a full-screen **Image** as its backdrop (a dim overlay). Keep **Raycast Target ON** so
-     clicks can't fall through to the game behind it.
-   - Add four **Button - TextMeshPro** children: `Resume`, `Restart`, `Settings`, `Quit to Menu`.
-     A **Vertical Layout Group** on `PausePanel` spaces them automatically.
-   - Set `PausePanel` **inactive** (untick the top-left checkbox) so it starts hidden.
+1. Under the `Main` Canvas, `PausePanel` holds `PauseImage` (Mina's art) as its first child. Set the
+   art's RectTransform pivot/anchors to **center** (a stretch pivot offset it — that bug is fixed).
+   Make sure `PauseImage` is the **top** child so it draws *behind* the buttons.
+2. Keep `PausePanel` **inactive** by default (the controller shows it on `Paused`).
 
-2. Add the **Pause Menu Controller** to a UI object (the Canvas, or an empty `[PauseLogic]` under it):
-   - `Pause Panel` → the `PausePanel` object.
-   - `State Entered` → `ScriptableObjects/Events/StateEntered.asset`.
-   - `State Exited`  → `ScriptableObjects/Events/StateExited.asset`.
-   - Leave the optional `Resume/Settings/Main Menu Button` + `Settings Panel` fields **empty** —
-     we drive each button with its own component below (one consistent pattern). The controller
-     still handles auto show/hide on the `Paused` state and the **Esc**/**Start** toggle.
+### 7.2 Transparent buttons over the painted ones
 
-### 7.2 Wire the five buttons (one component each)
+Mina's art paints three buttons — **PLAY**, **SETTINGS**, **QUIT**. Put one invisible UI button over
+each. For every button:
 
-| Button       | Component        | Setting                                              |
-|--------------|------------------|-----------------------------------------------------|
-| Resume       | `GameStateButton`| `Action = Resume`                                   |
-| Restart      | `GameStateButton`| `Action = Restart`  *(new action — reloads `Main`)* |
-| Settings     | `PanelButton`    | `Action = Show`, `Target Panel = SettingsSubPanel`, `Use Transition = off` |
-| Quit to Menu | `GameStateButton`| `Action = MainMenu`  *(returns to `Start` — NOT a desktop quit)* |
+1. **Image → Color alpha = 0**, but leave **Raycast Target ON** (an alpha-0 image still takes clicks).
+2. **Button → Transition = None.** Otherwise the default Color-Tint transition repaints the image
+   visible on hover/press. (This is *the* gotcha for invisible buttons.)
+3. Delete/disable the button's child **Text (TMP)** — the label is in the art.
+4. Position/size its RectTransform over the painted button. Tip: bump alpha to ~80 while placing,
+   then back to 0.
 
-There is no desktop-`Quit` button here on purpose: a stray click mid-run shouldn't be able to close
-the whole game. Full **Quit** lives on the Start-scene main menu (§2). `Quit to Menu` uses the
-existing `MainMenu` action, so leaving a run always lands you safely back on the menu.
+Map and wire each:
 
-Select each button → **Add Component** → the listed component (the `Button` ref auto-fills) → set
-the field shown. **Restart** calls the new `GameManager.RestartGame()`: it re-enters `Playing` and
-reloads the `Main` scene behind the bubble transition, so `RunDirector` and the track rebuild from
-scratch — a clean fresh run.
+| Painted button | Object       | How it acts                                                              |
+|----------------|--------------|--------------------------------------------------------------------------|
+| PLAY           | `Resume`     | Assign to **PauseMenuController → Resume Button** (triggers the countdown). |
+| SETTINGS       | `Settings`   | `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`, `Use Transition = off`. |
+| QUIT           | `QuitToMenu` | `GameStateButton`, `Action = MainMenu` (returns to `Start` — NOT a desktop quit). |
 
-### 7.3 The in-panel Settings sub-panel
+> **Delete the old `Restart` button GameObject** under `PausePanel` — that feature was removed and
+> the art has no Restart graphic.
+>
+> Resume is the one button NOT driven by a `GameStateButton`: it must run the countdown, so it's
+> wired through `PauseMenuController.Resume Button` instead.
 
-Reaching the full Settings *scene* from pause would abandon the run (its Back goes to the main menu),
-so pause gets a small **in-place** settings panel instead — the sliders/toggle talk to the same
-persistent managers, so no extra setup is needed.
+### 7.3 The resume countdown
 
-1. Under `PausePanel`, create `SettingsSubPanel` (an Image background). Set it **inactive**.
-2. Inside it add the same controls as the Settings scene (see §6):
-   - Two **Sliders** (Min 0, Max 1, Whole Numbers off) → `Music Volume Control` / `Sfx Volume Control`.
-   - A **Toggle** → `High Contrast Control`.
-   - A **Back** button → `PanelButton`, `Action = Hide`, `Target Panel = SettingsSubPanel`,
-     `Use Transition = off`. (Returns to the pause buttons.)
+1. Under the Canvas (above `PausePanel` so it draws on top, or its own child), make `CountdownRoot`
+   — an empty holding a large **TextMeshPro** number centered on screen. Set `CountdownRoot`
+   **inactive** by default.
+2. On **PauseMenuController**, assign **Countdown Root** = `CountdownRoot`, **Countdown Text** = the
+   TMP number, and leave **Countdown Seconds = 3** (set 0 to resume instantly).
 
-The §7.2 **Settings** button shows this panel; its **Back** button hides it. Because the controls
-reach `GameManager.Instance.Audio` / `.Accessibility` (which persist from `Start`), they work mid-run
-with no wiring of their own.
+When you resume, the controller hides the menu, shows `CountdownRoot`, counts 3→2→1 (gameplay still
+frozen), then un-freezes. Want a "GO!" flash? Add it in `ResumeCountdown()` after the loop.
 
-### 7.4 Test
+### 7.4 Wire the controller
 
-1. **Play** from `Start`, then **Play** into `Main`.
-2. Press **Esc** → the run freezes (gremlin, scroll, timer all stop) and `PausePanel` appears.
-3. **Settings** → sub-panel opens; drag a slider → volume changes live; **Back** → pause buttons.
-4. **Resume** (or **Esc**) → the run continues exactly where it left off.
-5. **Restart** → bubbles sweep, `Main` reloads, a fresh run starts in `Playing`.
-6. **Quit to Menu** → bubbles sweep back to the `Start` main menu (the run ends; the app stays open).
+Add **Pause Menu Controller** to a UI object and assign:
+
+- `Pause Panel` → `PausePanel`
+- `Resume Button` → the transparent `Resume` button (over PLAY)
+- `Countdown Root` → `CountdownRoot`; `Countdown Text` → the TMP number
+- `State Entered` → `ScriptableObjects/Events/StateEntered.asset`
+- `State Exited`  → `ScriptableObjects/Events/StateExited.asset`
+- Leave `Settings Button` / `Main Menu Button` / `Settings Panel` empty — `Settings` and
+  `QuitToMenu` carry their own `PanelButton` / `GameStateButton`.
+
+### 7.5 Settings (shared overlay)
+
+Pause reuses the **one `SettingsPanel` prefab from §3** — there's no separate sub-panel. Place a
+`SettingsPanel` instance in `Main` (an overlay, above `PausePanel`), set inactive. The §7.2 SETTINGS
+button opens it (`PanelButton` → `Show`, target = that instance). Its bottom button hides it (back to
+the pause menu) or, if you override that instance, jumps to the main menu — see §3. The sliders and
+toggle reach the persistent managers, so they work mid-run with no extra wiring.
+
+### 7.6 Test
+
+1. **Play** from `Start` into `Main`.
+2. **Esc** → run freezes, art + invisible buttons appear.
+3. Click **PLAY** (Resume) or press **Esc** → menu hides, **3-2-1** counts down, *then* the run
+   continues. Gameplay stays frozen for the whole count.
+4. **SETTINGS** → sub-panel opens; sliders change audio live; **Back** returns.
+5. **QUIT** → bubbles sweep back to the `Start` menu (app stays open).
 
 > Needs an **EventSystem** in the scene for clicks/sliders (Unity adds one with the first Canvas).
 

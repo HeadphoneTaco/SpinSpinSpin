@@ -21,7 +21,6 @@ namespace _Project.Code.UI {
             MainMenu,
             Pause,
             Resume,
-            Restart,
             Quit
         }
 
@@ -62,9 +61,6 @@ namespace _Project.Code.UI {
                     break;
                 case Action.Resume:
                     GameManager.Instance.Resume();
-                    break;
-                case Action.Restart:
-                    GameManager.Instance.RestartGame();
                     break;
                 case Action.Quit:
                     Quit();
