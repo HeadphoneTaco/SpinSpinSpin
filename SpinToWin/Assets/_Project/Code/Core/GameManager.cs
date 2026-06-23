@@ -15,6 +15,10 @@ namespace _Project.Code.Core {
         private AudioManager _audio;
         private AccessibilityManager _accessibility;
 
+        // The state we were in when settings opened, so closing the overlay returns there
+        // (MainMenu from the title screen, Paused from the pause menu) instead of always MainMenu.
+        private string _stateBeforeSettings;
+
         /// <summary>The CoreUtils state machine driving the game.</summary>
         public StateMachine StateMachine => stateMachine;
 
@@ -60,9 +64,34 @@ namespace _Project.Code.Core {
             ChangeState(GameStateNames.Playing);
         }
 
-        /// <summary>Opens the settings screen (its own scene). Return with <see cref="ReturnToMenu" />.</summary>
+        /// <summary>
+        ///     Opens the settings overlay. Settings is still a state (gameplay systems gate on
+        ///     IsPlaying, so the game stays frozen), but it no longer loads its own scene — the
+        ///     overlay shows on top of whatever is active. Close with <see cref="CloseSettings" />.
+        /// </summary>
         public void OpenSettings() {
+            if (IsState(GameStateNames.Settings)) {
+                return;
+            }
+
+            _stateBeforeSettings = CurrentStateName;
             ChangeState(GameStateNames.Settings);
+        }
+
+        /// <summary>
+        ///     Closes the settings overlay, returning to the state it was opened from (Paused or
+        ///     MainMenu). Falls back to MainMenu if that state is unknown.
+        /// </summary>
+        public void CloseSettings() {
+            if (!IsState(GameStateNames.Settings)) {
+                return;
+            }
+
+            string back = string.IsNullOrEmpty(_stateBeforeSettings)
+                ? GameStateNames.MainMenu
+                : _stateBeforeSettings;
+            _stateBeforeSettings = null;
+            ChangeState(back);
         }
 
         public void Pause() {

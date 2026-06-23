@@ -21,7 +21,11 @@ namespace _Project.Code.UI {
             MainMenu,
             Pause,
             Resume,
-            Quit
+            Quit,
+
+            // Keep new values at the end: the action is serialized by its int index, so inserting
+            // mid-list would silently re-map existing buttons in scenes/prefabs.
+            CloseSettings
         }
 
         [SerializeField] private Button button;
@@ -52,6 +56,9 @@ namespace _Project.Code.UI {
                     break;
                 case Action.Settings:
                     GameManager.Instance.OpenSettings();
+                    break;
+                case Action.CloseSettings:
+                    GameManager.Instance.CloseSettings();
                     break;
                 case Action.MainMenu:
                     GameManager.Instance.ReturnToMenu();

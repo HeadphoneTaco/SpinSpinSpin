@@ -21,9 +21,10 @@ namespace _Project.Code.UI {
 
         [Header("Buttons")]
         [SerializeField] private Button resumeButton;
-        [SerializeField] private Button settingsButton;
         [SerializeField] private Button mainMenuButton;
-        [SerializeField] private GameObject settingsPanel;
+
+        // Settings is opened by a GameStateButton (Action.Settings) on the pause panel and shown by
+        // the state-driven SettingsOverlay — this controller no longer owns that show/hide logic.
 
         [Header("Resume countdown")]
         [Tooltip("Shown during the 3-2-1 count, hidden otherwise. Usually the countdown number's parent object.")]
@@ -60,10 +61,6 @@ namespace _Project.Code.UI {
                 resumeButton.onClick.AddListener(BeginResume);
             }
 
-            if (settingsButton != null) {
-                settingsButton.onClick.AddListener(OnSettingsClicked);
-            }
-
             if (mainMenuButton != null) {
                 mainMenuButton.onClick.AddListener(OnMainMenuClicked);
             }
@@ -87,10 +84,6 @@ namespace _Project.Code.UI {
 
             if (resumeButton != null) {
                 resumeButton.onClick.RemoveListener(BeginResume);
-            }
-
-            if (settingsButton != null) {
-                settingsButton.onClick.RemoveListener(OnSettingsClicked);
             }
 
             if (mainMenuButton != null) {
@@ -159,12 +152,6 @@ namespace _Project.Code.UI {
             ShowCountdown(false);
             _resuming = null;
             GameManager.Instance.Resume();
-        }
-
-        private void OnSettingsClicked() {
-            if (settingsPanel != null) {
-                settingsPanel.SetActive(true);
-            }
         }
 
         private void OnMainMenuClicked() {

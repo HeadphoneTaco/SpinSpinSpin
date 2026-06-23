@@ -8,9 +8,9 @@ namespace _Project.Code.Core {
     /// <summary>
     ///     Drives scene changes off the game state: each state that lives in its own scene maps to
     ///     a scene name, and entering that state covers the screen with the bubble transition,
-    ///     loads the scene while hidden, then reveals. MainMenu → Start, Settings → Settings,
-    ///     Playing → Main. States that are just in-scene overlays (Paused, GameOver) map to nothing
-    ///     and don't trigger a load. Put this on the persistent [Managers] object; the (also
+    ///     loads the scene while hidden, then reveals. MainMenu → Start, Playing → Main. States
+    ///     that are just in-scene overlays (Settings, Paused, GameOver) map to nothing and don't
+    ///     trigger a load. Put this on the persistent [Managers] object; the (also
     ///     persistent) <see cref="ScreenTransition" /> is found via its singleton.
     ///
     ///     The camera no longer moves between framings — each scene is a single fixed shot and
@@ -18,7 +18,6 @@ namespace _Project.Code.Core {
     /// </summary>
     public class GameTransitions : MonoBehaviour {
         [SerializeField] private string menuScene = "Start";
-        [SerializeField] private string settingsScene = "Settings";
         [SerializeField] private string gameScene = "Main";
 
         [Header("Events")]
@@ -42,8 +41,8 @@ namespace _Project.Code.Core {
         private string SceneForState(string stateName) {
             return stateName switch {
                 GameStateNames.MainMenu => menuScene,
-                GameStateNames.Settings => settingsScene,
                 GameStateNames.Playing => gameScene,
+                // Settings is now an in-scene overlay (SettingsOverlay), not its own scene.
                 _ => null
             };
         }

@@ -1,26 +1,37 @@
 # Menu Setup Guide
 
-How to wire up the Main Menu and the Settings **screen** in the Unity editor. Settings is its own
-scene now (`Settings.unity`) — not a panel — so the menu's Settings button *navigates* to it, just
-like Play navigates to the game. The scripts only handle logic; you build the visuals and assign
-references here.
+How to wire up the Main Menu and the Settings **overlay** in the Unity editor. Settings is an
+**in-scene overlay** now — not its own scene (`Settings.unity` is retired) and not a `PanelButton`
+toggle. It's still a real game state (`Settings`), but that state no longer loads a scene; instead a
+`SettingsOverlay` component shows/hides the panel when the state enters/exits. The menu's Settings
+button is a normal `GameStateButton` (`Action = Settings`), exactly like Play. The scripts only
+handle logic; you build the visuals and assign references here.
+
+Why a state instead of a plain `PanelButton` show/hide: opening Settings *exits* the previous state
+(MainMenu or Paused), so gameplay stays frozen via the existing `IsPlaying` gating **and Esc no
+longer fires the resume countdown while Settings is open**. Closing returns to whichever state opened
+it — MainMenu from the title screen, Paused from the pause menu — with no per-instance wiring.
 
 The UI is **modular** — small single-purpose components, each doing one job (SOLID):
 
 - **`GameStateButton`** (`Code/UI/`) — a Button that asks `GameManager` for one transition
-  (Play, Settings, MainMenu/Back, Pause, Resume, Quit). Every menu/nav button uses this; the scene
-  change + bubble transition happen automatically because the new state maps to a scene in
-  `GameTransitions`. One button = one component = one action.
+  (Play, Settings, CloseSettings, MainMenu/Back, Pause, Resume, Quit). Every menu/nav button uses
+  this. For states that map to a scene in `GameTransitions` the bubble transition + scene load happen
+  automatically; `Settings` / `CloseSettings` don't load a scene, they just flip the overlay. One
+  button = one component = one action.
+- **`SettingsOverlay`** (`Code/UI/`) — goes on the settings overlay prefab root. Listens to the
+  StateEntered / StateExited events and shows/hides its panel when the `Settings` state enters/exits.
+  Also closes on Esc / gamepad B. This is the component that makes the overlay state-driven.
 - **`ScreenTransition`** + a **`TransitionEffect`** (`Code/UI/Transitions/`) — the persistent
   full-screen bubble overlay that covers each screen change. One per game; see the Transitions
   section of `Code/Core/StateMachineSetup.md`. (The camera no longer moves.)
 - **`MusicVolumeControl` / `SfxVolumeControl`** (`Code/UI/Settings/`) — go on the slider objects in
-  the Settings scene; each binds its slider (and an optional % label) to a volume.
+  the overlay; each binds its slider (and an optional % label) to a volume.
 - **`HighContrastControl`** (`Code/UI/Settings/`) — goes on the toggle; binds it to high-contrast.
 - The controls talk to the managers through an `ISetting<T>` abstraction (`Code/Settings/`), not
   to `AudioManager`/`AccessibilityManager` directly — so a control doesn't care who owns the value.
-- **`PanelButton`** (`Code/UI/Panels/`) — still around for genuine in-scene panels (e.g. a pause
-  overlay): Show/Hide/Toggle a panel behind the transition. Not used for Settings anymore.
+- **`PanelButton`** (`Code/UI/Panels/`) — still around for genuine in-scene sub-panels behind the
+  transition. The Settings overlay no longer uses it (it's state-driven via `SettingsOverlay`).
 
 To add a new slider-backed setting later, you write a ~3-line subclass of `SliderSettingControl`
 and a matching `ISetting<float>` on the manager — no existing file changes.
@@ -46,56 +57,96 @@ and a matching `ISetting<float>` on the manager — no existing file changes.
 
 That's the whole menu — no controller object, each button carries its own one-line intent.
 
-## 3. Settings panel — one shared overlay (used by main menu *and* pause)
+## 3. Settings overlay — one shared prefab (used by main menu *and* pause)
 
-There is **one** settings menu, built once as a **`SettingsPanel` prefab** and dropped into both the
-`Start` scene (opened from the main menu) and the `Main` scene (opened from pause). It is an
-**in-scene overlay**, not a separate scene — pause can't load a Settings *scene* or it would unload
-`Main` and end the run. The old `Settings.unity` is retired (delete it / remove from Build Settings;
-`GameManager.OpenSettings()` and the `Settings` state are just left unused — no harm).
+There is **one** settings menu, built once as a **`SettingsOverlay` prefab** and dropped into both the
+`Start` scene (opened from the main menu) and the `Main` scene (opened from pause). It's an in-scene
+overlay driven by the `Settings` state — pause can't load a Settings *scene* or it would unload `Main`
+and end the run. The old `Settings.unity` is retired (delete it / remove from Build Settings).
 
-**Build the prefab once:**
+### 3a. Make the prefab by extracting the existing `Settings.unity` UI
 
-1. Under a Canvas, make `SettingsPanel` with Mina's settings art as the background image. Anchor the
-   art **center** at the correct size — a *stretch* pivot offsets it (the same bug you hit on the
-   pause art). Set `SettingsPanel` **inactive** by default.
-2. Add the controls, positioned over the painted art (same transparent-over-art trick as the pause
-   buttons wherever the art already draws the control):
-   - Two **Sliders** (Min 0, Max 1, Whole Numbers off) → `Music Volume Control` / `Sfx Volume
-     Control`. Optional `Value Label` (TMP) for the live %.
-   - A **Toggle** → `High Contrast Control`.
-   - A **bottom/exit button** (see below).
-3. Drag `SettingsPanel` into your Prefabs folder, then place an instance in **both** `Start` and `Main`.
+You already built the whole settings UI (sliders, labels, toggle, art) in `Settings.unity` — reuse it
+rather than rebuilding. Dragging an object to the Project window makes a prefab with **all its wired
+references intact**, so this loses nothing:
 
-**The swappable bottom button.** Because the panel is an overlay, *closing* it reveals whatever
-opened it. Choose per instance:
+1. Open **`Settings.unity`**. In the Hierarchy, find the root that holds the settings UI. From the
+   scene it's the **`Canvas`** with `Background`, `MusicVolumeControl`, `SfxVolumeControl`,
+   `AccessibilityToggle`, and `Settings_Menu` under it.
+2. You want the *panel*, not the whole Canvas, to become the prefab (each target scene already has its
+   own Canvas). Build a **two-level** structure — this matters, see the warning below:
+   - Right-click the Canvas → **Create Empty Child**, name it **`SettingsOverlay`** (this is the
+     always-active **root** that carries the component). Stretch/fill it (anchors min `0,0`
+     max `1,1`, offsets `0`).
+   - Right-click `SettingsOverlay` → **Create Empty Child**, name it **`Panel`**, also stretch/fill.
+     This is the part that gets shown/hidden.
+   - Drag `Background`, the two controls, `AccessibilityToggle`, and `Settings_Menu` **onto `Panel`**
+     so they're *its* children. (Reparenting under the same Canvas keeps their layout.)
 
-- **Back to caller** — `PanelButton`, `Action = Hide`, `Target Panel = SettingsPanel`. Hiding reveals
-  the main menu (in `Start`) or the pause menu (in `Main`) underneath, no extra logic.
-- **Straight to main menu** — if the pause instance's exit should bail all the way out, swap that one
-  button to a `GameStateButton`, `Action = MainMenu`.
+   > ⚠️ **Don't put the visible UI directly on `SettingsOverlay` and toggle that.** The component
+   > below subscribes to events in `OnEnable`, which **never runs while its GameObject is inactive**.
+   > If you deactivate the object the component lives on, it can never hear "Settings entered" to turn
+   > itself back on — you'd open Settings and see nothing, with no way to Esc out. The root stays
+   > **active**; only its child `Panel` toggles.
+3. Add the **`SettingsOverlay`** component to the **`SettingsOverlay` root** (**Add Component →
+   Settings Overlay**). Assign:
+   - **Panel** → the child **`Panel`** object (NOT the root the component is on).
+   - **State Entered** → `ScriptableObjects/Events/StateEntered.asset`
+   - **State Exited**  → `ScriptableObjects/Events/StateExited.asset`
+   - **Close On Cancel** → leave **on** (Esc / gamepad B closes the overlay).
+4. The scene already has a back button (the **`MainMenu`** object, currently `GameStateButton`,
+   `Action = MainMenu`). Re-point it to **`Action = CloseSettings`** so it returns to the caller
+   (pause *or* menu) instead of always jumping to the main menu — see §3c. Make sure it's a child of
+   **`Panel`** too (so it hides with the rest).
+5. Drag **`SettingsOverlay`** from the Hierarchy into your **`Prefabs/UI`** folder → it becomes a
+   prefab asset. Delete the leftover `Settings.unity` afterward.
 
-So "main menu vs back to pause" is simply *which component sits on that instance's bottom button* —
-override it on the `Main` prefab instance if it should differ from `Start`.
+> Prefer rebuilding from scratch? Same two-level result: under a Canvas make an active
+> `SettingsOverlay` root with the component (step 3), and a child `Panel` holding `Background` art,
+> two **Sliders** (Min 0, Max 1, Whole Numbers off) with `MusicVolumeControl` / `SfxVolumeControl`, a
+> **Toggle** with `HighContrastControl`, and the exit button.
 
-**Open it:**
+### 3b. Place an instance in each scene
 
-- Main menu `Settings` button → `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`
-  (replaces the old `GameStateButton = Settings`).
-- Pause `Settings` button → `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`.
+Drag the `SettingsOverlay` prefab into the **`Start`** Canvas and the **`Main`** Canvas. Leave the
+**`SettingsOverlay` root ACTIVE**, and set its child **`Panel` inactive** by default — the component
+must stay enabled to listen for the `Settings` state, and it shows the `Panel` when that state enters.
+(The component also forces the right starting visibility in `OnEnable`, so as long as the root is
+active you're covered.) No other per-scene wiring: the event assets are shared, and the controls reach
+`GameManager.Instance.Audio` / `.Accessibility` (persistent from `Start`).
 
-The controls reach `GameManager.Instance.Audio` / `.Accessibility` (persistent from `Start`), so the
-same prefab works in both scenes with no per-scene wiring.
+### 3c. The exit button (closes the overlay)
+
+Because closing returns to whichever state opened it, **both instances use the same component** — no
+per-instance override needed:
+
+- **Close** — `GameStateButton`, `Action = CloseSettings`. Returns to MainMenu (from `Start`) or
+  Paused (from `Main`) automatically, because `GameManager` remembers the state it opened from.
+
+(Want the pause instance to bail *all the way* to the main menu instead of back to the pause screen?
+Swap just that instance's button to `GameStateButton`, `Action = MainMenu`.)
+
+### 3d. Open it
+
+- Main menu `Settings` button → `GameStateButton`, `Action = Settings`.
+- Pause `Settings` button → `GameStateButton`, `Action = Settings`.
+
+Both are the same one-line component as every other nav button.
 
 ## 4. How it connects at runtime
 
 - Every nav button is a `GameStateButton` → it calls a `GameManager` transition (e.g.
-  `OpenSettings()` / `StartGame()` / `ReturnToMenu()`), which changes state.
+  `OpenSettings()` / `CloseSettings()` / `StartGame()` / `ReturnToMenu()`), which changes state.
 - `GameTransitions` (on the persistent `[Managers]`) maps a state to its scene and plays the bubble
-  transition: cover → load scene → reveal. `MainMenu → Start`, `Playing → Main`. (Settings is now an
-  in-scene overlay panel, not a scene, so it doesn't route through here.)
-- `GameManager` lives on `[Managers]` in `Start` and persists across scenes, so the settings
-  panel's controls reach `GameManager.Instance.Audio` / `.Accessibility` with no setup of their own.
+  transition: cover → load scene → reveal. `MainMenu → Start`, `Playing → Main`. **Settings maps to
+  no scene**, so it doesn't route through here — the scene stays put and the overlay covers it.
+- **Opening settings:** `OpenSettings()` records the current state (`MainMenu` or `Paused`) and enters
+  `Settings`. The active scene's `SettingsOverlay` sees the `Settings` StateEntered event and shows
+  its panel. **Closing:** `CloseSettings()` (the exit button or Esc) re-enters the recorded state;
+  `SettingsOverlay` sees StateExited and hides. Returning to `Paused` re-shows the pause panel via
+  `PauseMenuController`; returning to `MainMenu` just reveals the title screen underneath.
+- `GameManager` lives on `[Managers]` in `Start` and persists across scenes, so the overlay's
+  controls reach `GameManager.Instance.Audio` / `.Accessibility` with no setup of their own.
 - **Volume sliders** → `MusicVolumeControl` / `SfxVolumeControl` read & write the volume settings,
   initialised to the current values when the panel opens.
 - **Quit** → exits the build (and stops Play mode in the editor).
@@ -103,19 +154,22 @@ same prefab works in both scenes with no per-scene wiring.
 ## 5. Quick test
 
 1. Press **Play** from the `Start` scene.
-2. Click **Settings** → the settings overlay opens; drag the sliders — volumes update live. Click
-   the bottom button → the overlay closes back to the menu.
+2. Click **Settings** → the overlay appears (no scene load); drag the sliders — volumes update live.
+   Click the exit button **or press Esc** → the overlay closes back to the menu.
 3. Click **Play** — the Console logs `[State] entered Playing` (from `DebugStateControls`, if
    present) and the `Main` scene loads.
 
 ## 6. The settings components, in detail
 
-- **Music/Sfx Volume Control** — each goes on its slider object in the Settings scene. Optional
+- **Music/Sfx Volume Control** — each goes on its slider object in the overlay. Optional
   `Value Label` (`TMP_Text`) shows the volume as a live percentage (e.g. `80%`); leave empty to skip.
 - **High Contrast Control** — goes on a UI Toggle. Drives `GameManager.Instance.Accessibility`
   and remembers the choice (PlayerPrefs). The visual swap layer itself isn't built yet (see §8).
-- **Game State Button** — one `Action` (Play/Settings/MainMenu/Pause/Resume/Quit) per button. The
-  scene change and bubble transition follow automatically from the state it requests.
+- **Settings Overlay** — goes on the overlay prefab root. Shows/hides its `Panel` when the `Settings`
+  state enters/exits (via the StateEntered/StateExited events) and closes on Esc / gamepad B.
+- **Game State Button** — one `Action` (Play/Settings/CloseSettings/MainMenu/Pause/Resume/Quit) per
+  button. For scene-backed states the scene change + bubble transition follow automatically;
+  `Settings`/`CloseSettings` just flip the overlay.
 - **Screen transition** — the bubble overlay is a single persistent object set up once (see the
   Transitions section of `Code/Core/StateMachineSetup.md`); every screen hop drives it via
   `ScreenTransition.Instance`.
@@ -161,7 +215,7 @@ Map and wire each:
 | Painted button | Object       | How it acts                                                              |
 |----------------|--------------|--------------------------------------------------------------------------|
 | PLAY           | `Resume`     | Assign to **PauseMenuController → Resume Button** (triggers the countdown). |
-| SETTINGS       | `Settings`   | `PanelButton`, `Action = Show`, `Target Panel = SettingsPanel`, `Use Transition = off`. |
+| SETTINGS       | `Settings`   | `GameStateButton`, `Action = Settings` (the `SettingsOverlay` instance in `Main` shows itself). |
 | QUIT           | `QuitToMenu` | `GameStateButton`, `Action = MainMenu` (returns to `Start` — NOT a desktop quit). |
 
 > **Delete the old `Restart` button GameObject** under `PausePanel` — that feature was removed and
@@ -190,16 +244,22 @@ Add **Pause Menu Controller** to a UI object and assign:
 - `Countdown Root` → `CountdownRoot`; `Countdown Text` → the TMP number
 - `State Entered` → `ScriptableObjects/Events/StateEntered.asset`
 - `State Exited`  → `ScriptableObjects/Events/StateExited.asset`
-- Leave `Settings Button` / `Main Menu Button` / `Settings Panel` empty — `Settings` and
-  `QuitToMenu` carry their own `PanelButton` / `GameStateButton`.
+- `Main Menu Button` — optional; only if you wire QUIT through the controller instead of its own
+  `GameStateButton`. The SETTINGS button carries its own `GameStateButton` (`Action = Settings`), so
+  there's no settings field on the controller anymore.
 
 ### 7.5 Settings (shared overlay)
 
-Pause reuses the **one `SettingsPanel` prefab from §3** — there's no separate sub-panel. Place a
-`SettingsPanel` instance in `Main` (an overlay, above `PausePanel`), set inactive. The §7.2 SETTINGS
-button opens it (`PanelButton` → `Show`, target = that instance). Its bottom button hides it (back to
-the pause menu) or, if you override that instance, jumps to the main menu — see §3. The sliders and
-toggle reach the persistent managers, so they work mid-run with no extra wiring.
+Pause reuses the **one `SettingsOverlay` prefab from §3** — there's no separate sub-panel. Place a
+`SettingsOverlay` instance in `Main` (above `PausePanel`), set inactive. The §7.2 SETTINGS button
+opens it via `GameStateButton` (`Action = Settings`): entering the `Settings` state exits `Paused`,
+so `PauseMenuController` hides the pause panel and the overlay shows itself. The overlay's exit button
+(`Action = CloseSettings`) — or **Esc** — returns to `Paused`, re-showing the pause panel. The sliders
+and toggle reach the persistent managers, so they work mid-run with no extra wiring.
+
+> Because settings opening exits `Paused`, **Esc while settings is open closes settings** (handled by
+> `SettingsOverlay`) rather than triggering the resume countdown. Esc only resumes from the pause
+> screen itself.
 
 ### 7.6 Test
 
@@ -207,7 +267,8 @@ toggle reach the persistent managers, so they work mid-run with no extra wiring.
 2. **Esc** → run freezes, art + invisible buttons appear.
 3. Click **PLAY** (Resume) or press **Esc** → menu hides, **3-2-1** counts down, *then* the run
    continues. Gameplay stays frozen for the whole count.
-4. **SETTINGS** → sub-panel opens; sliders change audio live; **Back** returns.
+4. **SETTINGS** → pause panel hides, overlay opens; sliders change audio live; the exit button **or
+   Esc** returns to the pause screen. (Esc here closes settings, it does *not* resume.)
 5. **QUIT** → bubbles sweep back to the `Start` menu (app stays open).
 
 > Needs an **EventSystem** in the scene for clicks/sliders (Unity adds one with the first Canvas).
