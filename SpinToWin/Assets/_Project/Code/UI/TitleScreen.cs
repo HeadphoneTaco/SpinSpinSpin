@@ -14,7 +14,6 @@ namespace _Project.Code.UI
         [SerializeField] private RectTransform shakepointB;
         [SerializeField] private bool shaking;
         
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
             shakepointA.position = washingMachine.rectTransform.position;
@@ -32,7 +31,7 @@ namespace _Project.Code.UI
                 {
                     washingMachine.rectTransform.position =  Vector2.MoveTowards(washingMachine.rectTransform.position, shakepointB.position, shakeSpeed * Time.deltaTime);
                     yield return null;
-                    Debug.Log("moving");
+                    //Debug.Log("moving");
                 }
             
                 yield return new WaitForSeconds(timeToWait);
