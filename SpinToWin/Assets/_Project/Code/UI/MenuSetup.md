@@ -102,20 +102,82 @@ does **not** get an `[Managers]` object — those persist from `Start`, so the c
 
 ## 7. Pause menu — **`Main` (gameplay) scene**
 
-(The main menu + settings in sections 1–6 are built in the **`Start`** scene. The pause menu
-lives in the **`Main`** scene. See `Code/Core/StateMachineSetup.md` for the full per-scene map.)
+(Sections 1–6 build the main menu + settings in the **`Start`** / **`Settings`** scenes. The pause
+menu lives in the **`Main`** scene. See `Code/Core/StateMachineSetup.md` for the per-scene map.)
 
-1. Under the `Main` scene's Canvas, make a `PausePanel` (an Image background + Resume /
-   Settings / Main Menu buttons). Set it **inactive** by default.
-2. Add the **Pause Menu Controller** to a UI object and assign: `Pause Panel`, the three
-   buttons, the optional `Settings Panel`, and the `StateEntered` / `StateExited` events.
-3. The controller shows the panel on the `Paused` state and hides it otherwise. **Esc** (or
-   gamepad **Start**) toggles pause from anywhere in play — it's a code-defined input, no asset
-   wiring needed.
-4. Resume → `Resume()`, Main Menu → `ReturnToMenu()`.
+**What already works (no building needed):** `GameManager.Pause/Resume/TogglePause`, the `Paused`
+state, and `PauseMenuController` (auto show/hide + **Esc**/gamepad **Start** toggle). And gameplay
+genuinely **freezes** while paused: `GremlinRunner`, `RunDirector`, `ScrollingItem`, and
+`TrackSpawner` each gate their `Update` on `GameManager.Instance.IsPlaying`, which is false in
+`Paused` — so movement, scroll, spawning, and the timer all halt. (No `Time.timeScale` trick; the
+state gate is the freeze.) Music keeps playing by design (`StateAudio` leaves it alone on `Paused`).
 
-> Pause doesn't freeze gameplay yet — that's the separate time-control work. For now it blocks
-> spin input and shows the menu.
+What you build in the editor is the **panel and its buttons**. Like the rest of the UI, each button
+is one self-contained component (`GameStateButton` for state changes, `PanelButton` for show/hide),
+so the controller just owns visibility + the Esc toggle.
+
+### 7.1 The pause panel
+
+1. Under the `Main` scene's **Canvas**, create an empty `PausePanel`.
+   - Add a full-screen **Image** as its backdrop (a dim overlay). Keep **Raycast Target ON** so
+     clicks can't fall through to the game behind it.
+   - Add four **Button - TextMeshPro** children: `Resume`, `Restart`, `Settings`, `Quit to Menu`.
+     A **Vertical Layout Group** on `PausePanel` spaces them automatically.
+   - Set `PausePanel` **inactive** (untick the top-left checkbox) so it starts hidden.
+
+2. Add the **Pause Menu Controller** to a UI object (the Canvas, or an empty `[PauseLogic]` under it):
+   - `Pause Panel` → the `PausePanel` object.
+   - `State Entered` → `ScriptableObjects/Events/StateEntered.asset`.
+   - `State Exited`  → `ScriptableObjects/Events/StateExited.asset`.
+   - Leave the optional `Resume/Settings/Main Menu Button` + `Settings Panel` fields **empty** —
+     we drive each button with its own component below (one consistent pattern). The controller
+     still handles auto show/hide on the `Paused` state and the **Esc**/**Start** toggle.
+
+### 7.2 Wire the five buttons (one component each)
+
+| Button       | Component        | Setting                                              |
+|--------------|------------------|-----------------------------------------------------|
+| Resume       | `GameStateButton`| `Action = Resume`                                   |
+| Restart      | `GameStateButton`| `Action = Restart`  *(new action — reloads `Main`)* |
+| Settings     | `PanelButton`    | `Action = Show`, `Target Panel = SettingsSubPanel`, `Use Transition = off` |
+| Quit to Menu | `GameStateButton`| `Action = MainMenu`  *(returns to `Start` — NOT a desktop quit)* |
+
+There is no desktop-`Quit` button here on purpose: a stray click mid-run shouldn't be able to close
+the whole game. Full **Quit** lives on the Start-scene main menu (§2). `Quit to Menu` uses the
+existing `MainMenu` action, so leaving a run always lands you safely back on the menu.
+
+Select each button → **Add Component** → the listed component (the `Button` ref auto-fills) → set
+the field shown. **Restart** calls the new `GameManager.RestartGame()`: it re-enters `Playing` and
+reloads the `Main` scene behind the bubble transition, so `RunDirector` and the track rebuild from
+scratch — a clean fresh run.
+
+### 7.3 The in-panel Settings sub-panel
+
+Reaching the full Settings *scene* from pause would abandon the run (its Back goes to the main menu),
+so pause gets a small **in-place** settings panel instead — the sliders/toggle talk to the same
+persistent managers, so no extra setup is needed.
+
+1. Under `PausePanel`, create `SettingsSubPanel` (an Image background). Set it **inactive**.
+2. Inside it add the same controls as the Settings scene (see §6):
+   - Two **Sliders** (Min 0, Max 1, Whole Numbers off) → `Music Volume Control` / `Sfx Volume Control`.
+   - A **Toggle** → `High Contrast Control`.
+   - A **Back** button → `PanelButton`, `Action = Hide`, `Target Panel = SettingsSubPanel`,
+     `Use Transition = off`. (Returns to the pause buttons.)
+
+The §7.2 **Settings** button shows this panel; its **Back** button hides it. Because the controls
+reach `GameManager.Instance.Audio` / `.Accessibility` (which persist from `Start`), they work mid-run
+with no wiring of their own.
+
+### 7.4 Test
+
+1. **Play** from `Start`, then **Play** into `Main`.
+2. Press **Esc** → the run freezes (gremlin, scroll, timer all stop) and `PausePanel` appears.
+3. **Settings** → sub-panel opens; drag a slider → volume changes live; **Back** → pause buttons.
+4. **Resume** (or **Esc**) → the run continues exactly where it left off.
+5. **Restart** → bubbles sweep, `Main` reloads, a fresh run starts in `Playing`.
+6. **Quit to Menu** → bubbles sweep back to the `Start` main menu (the run ends; the app stays open).
+
+> Needs an **EventSystem** in the scene for clicks/sliders (Unity adds one with the first Canvas).
 
 ## 8. High-contrast mode (plumbing only)
 

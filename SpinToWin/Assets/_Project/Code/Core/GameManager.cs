@@ -1,5 +1,7 @@
+using _Project.Code.UI.Transitions;
 using CoreUtils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace _Project.Code.Core {
     /// <summary>
@@ -74,6 +76,25 @@ namespace _Project.Code.Core {
         public void Resume() {
             if (IsPaused) {
                 ChangeState(GameStateNames.Playing);
+            }
+        }
+
+        /// <summary>
+        ///     Restarts the current run from the pause menu: re-enters Playing so the reloaded
+        ///     scene's gameplay is live again, then reloads the active (gameplay) scene through the
+        ///     bubble transition. RunDirector and the track rebuild on the fresh load.
+        /// </summary>
+        public void RestartGame() {
+            if (IsPaused) {
+                // No scene load fires here: GameTransitions sees we're already in the game scene.
+                ChangeState(GameStateNames.Playing);
+            }
+
+            string scene = SceneManager.GetActiveScene().name;
+            if (ScreenTransition.Instance != null) {
+                ScreenTransition.Instance.Play(() => SceneManager.LoadScene(scene));
+            } else {
+                SceneManager.LoadScene(scene);
             }
         }
 
