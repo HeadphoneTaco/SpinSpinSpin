@@ -48,7 +48,6 @@ MonoBehaviour:
   body: {fileID: 0}
   alignToCurve: 1
   value: 1
-  fillColor: {r: 1, g: 1, b: 1, a: 1}
   collectSfx: {fileID: 8300000, guid: a6f34bd73bbc26848a77d7ae27dfc2cb, type: 3}
 --- !u!1 &5291381000234040791
 GameObject:
@@ -220,8 +219,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 925738187315270608}
   - {fileID: 2117296943210070739}

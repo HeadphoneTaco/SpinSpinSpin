@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6587145082141801286, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_Name
-      value: SOCK_DEVIL
+      value: SOCK_DEVIl
       objectReference: {fileID: 0}
     - target: {fileID: 6612379835711806400, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_LocalPosition.x
