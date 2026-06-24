@@ -37,12 +37,27 @@ namespace _Project.Code.Gameplay {
         [SerializeField] private float acceleration = 0.4f;
         [SerializeField] private float minSpawnSpacingScale = 0.4f;
         [SerializeField] private float spawnRampTime = 60f;
+
+        [Header("Hits / lives")]
+        [Tooltip("How many obstacle hits the gremlin can take before the run is lost.")]
+        [SerializeField] private int maxHits = 3;
+        [Tooltip("Seconds of invincibility after a hit, so one obstacle (or a cluster) can't drain " +
+                 "several hits at once. 0 = no grace.")]
+        [SerializeField] private float hitGrace = 0.75f;
+
         [SerializeField] private GameEventInt sockCountChanged;
         [SerializeField] private GameEventInt distanceChanged;
+        [Tooltip("Raised with the remaining hit count whenever it changes (for the HUD hearts).")]
+        [SerializeField] private GameEventInt hitsChanged;
         private float _distance;
         private int _lastReportedDistance;
+        private float _graceUntil;
         public float Speed { get; private set; }
         public int SockCount { get; private set; }
+        public int MaxHits => maxHits;
+        public int HitsRemaining { get; private set; }
+        /// <summary>True during the post-hit grace window (handy for flashing the gremlin).</summary>
+        public bool Invincible => Time.time < _graceUntil;
         public int Distance => Mathf.FloorToInt(_distance);
         public float ElapsedTime { get; private set; }
         public RunOutcome Outcome { get; private set; }
@@ -98,6 +113,8 @@ namespace _Project.Code.Gameplay {
             ElapsedTime = 0f;
             Outcome = RunOutcome.None;
             SpawnSpacingScale = 1f;
+            HitsRemaining = maxHits;
+            _graceUntil = 0f;
 
             if (sockCountChanged != null) {
                 sockCountChanged.Raise(0);
@@ -105,6 +122,10 @@ namespace _Project.Code.Gameplay {
 
             if (distanceChanged != null) {
                 distanceChanged.Raise(0);
+            }
+
+            if (hitsChanged != null) {
+                hitsChanged.Raise(HitsRemaining);
             }
         }
 
@@ -124,9 +145,25 @@ namespace _Project.Code.Gameplay {
             }
         }
 
-        /// <summary>The gremlin hit a hazard: the run is lost.</summary>
+        /// <summary>
+        ///     The gremlin hit a hazard. Costs one hit; the run is lost only when hits run out.
+        ///     Ignored during the post-hit grace window and once the run has already ended.
+        /// </summary>
         public void Crash() {
-            EndRun(RunOutcome.Lost);
+            if (Outcome != RunOutcome.None || Invincible) {
+                return;
+            }
+
+            HitsRemaining = Mathf.Max(0, HitsRemaining - 1);
+            _graceUntil = Time.time + hitGrace;
+
+            if (hitsChanged != null) {
+                hitsChanged.Raise(HitsRemaining);
+            }
+
+            if (HitsRemaining <= 0) {
+                EndRun(RunOutcome.Lost);
+            }
         }
 
         /// <summary>Ends the run once, recording the outcome and dropping into the GameOver state.</summary>

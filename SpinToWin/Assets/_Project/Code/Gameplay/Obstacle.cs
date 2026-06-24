@@ -1,25 +1,30 @@
-using _Project.Code.Core;
 using UnityEngine;
 
 namespace _Project.Code.Gameplay {
     /// <summary>
     ///     A hazard on the belt — a lint trap, a rogue detergent pod, whatever the art team cooks up.
-    ///     The moment the gremlin touches it the run is over: it plays a crash sound and asks the
-    ///     <see cref="RunDirector" /> to end the game (which routes through the shared GameOver
-    ///     transition). Put this on the obstacle prefab with a trigger collider + kinematic Rigidbody.
+    ///     Touching it costs the gremlin one hit; the run only ends once the <see cref="RunDirector" />
+    ///     runs out of hits, which routes through the shared GameOver transition. Either way the
+    ///     obstacle recycles itself so it doesn't linger on the belt. The "ow" — sound + screen shake —
+    ///     is handled centrally by <see cref="HitFeedback" /> (it watches the hit count), so every
+    ///     hazard feels the same and there's one place to tune the juice. Put this on the obstacle
+    ///     prefab with a trigger collider + kinematic Rigidbody.
     /// </summary>
     public class Obstacle : ScrollingItem {
-        [SerializeField] private AudioClip crashSfx;
-
         protected override void OnHitPlayer(GremlinRunner runner) {
-            if (crashSfx != null && GameManager.Exists) {
-                GameManager.Instance.Audio.PlaySfx(crashSfx);
+            // Grace window already spent on a recent hit? Then this touch is free — don't punish it,
+            // just clear the obstacle off the belt.
+            RunDirector run = RunDirector.Instance;
+            if (run != null && run.Invincible) {
+                Despawn();
+                return;
             }
 
-            if (RunDirector.Instance != null) {
-                RunDirector.Instance.Crash();
+            if (run != null) {
+                run.Crash();
             }
-            // The obstacle stays put — the run is ending, no need to recycle it.
+
+            Despawn();
         }
     }
 }
