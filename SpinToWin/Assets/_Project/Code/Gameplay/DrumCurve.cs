@@ -43,5 +43,21 @@ namespace _Project.Code.Gameplay {
             float y = groundY + radius * (1f - Mathf.Cos(phi)) * squish;
             return new Vector2(z, y);
         }
+
+        /// <summary>
+        ///     The "pinned to the drum wall" orientation at angle phi: a pitch about world X so the
+        ///     item's local up points along the inward radial. An item stuck to the drum shares the
+        ///     drum's angular position, so this *is* turning with the drum. phi = 0 (the player) is
+        ///     flat/upright. Used by the items at runtime and by the spawner gizmo, so the preview and
+        ///     the real thing always match.
+        /// </summary>
+        public Quaternion RotationAt(float phi) {
+            return Quaternion.AngleAxis(-phi * Mathf.Rad2Deg, Vector3.right);
+        }
+
+        /// <summary>The item's up direction (inward radial) at angle phi — for gizmo previews.</summary>
+        public Vector3 UpAt(float phi) {
+            return new Vector3(0f, Mathf.Cos(phi), -Mathf.Sin(phi));
+        }
     }
 }

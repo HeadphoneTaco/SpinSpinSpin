@@ -184,6 +184,20 @@ namespace _Project.Code.Gameplay {
                 Gizmos.DrawSphere(new Vector3(x, start.y, start.x), 0.18f);
             }
 
+            // Green "up" ticks fanning around the C: how each item is oriented as it rotates with the
+            // drum. This previews the runtime tilt (ScrollingItem.alignToCurve) without pressing Play.
+            Gizmos.color = new Color(0.4f, 1f, 0.5f, 0.9f);
+            for (int i = 0; i < lanes; i++) {
+                float x = LaneX(i);
+                const int ticks = 8;
+                for (int t = 0; t <= ticks; t++) {
+                    float phi = Mathf.Lerp(curve.StartAngle, 0f, t / (float)ticks);
+                    Vector2 zy = curve.PointAt(phi);
+                    Vector3 p = new Vector3(x, zy.y, zy.x);
+                    Gizmos.DrawLine(p, p + curve.UpAt(phi) * 0.6f);
+                }
+            }
+
             Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.9f);
             Gizmos.DrawLine(new Vector3(-halfWidth, groundY, playerZ), new Vector3(halfWidth, groundY, playerZ));
         }

@@ -291,8 +291,8 @@ MonoBehaviour:
   outcomeText: {fileID: 157350444}
   livesText: {fileID: 0}
   fullHeart: "\u2665"
-  emptyHeart: "\u2661"
   heartSeparator: ' '
+  lostHeartFade: 0.28
 --- !u!4 &308751533
 Transform:
   m_ObjectHideFlags: 0
@@ -1036,7 +1036,7 @@ Transform:
   m_GameObject: {fileID: 1013034819}
   serializedVersion: 2
   m_LocalRotation: {x: 0.06901676, y: -0, z: -0, w: 0.9976155}
-  m_LocalPosition: {x: 0, y: 2.38, z: -5.24}
+  m_LocalPosition: {x: 0, y: 2.38, z: -6.19}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2055,8 +2055,8 @@ MonoBehaviour:
   playerZ: 0
   groundY: 0
   despawnZ: -10
-  halfWidth: 6.73
-  laneCount: 5
+  halfWidth: 4.34
+  laneCount: 6
   radius: 27.5
   sweepDegrees: 180
   squish: 0.43
@@ -2120,8 +2120,8 @@ MonoBehaviour:
   outcomeText: {fileID: 157350444}
   livesText: {fileID: 1556236942}
   fullHeart: "\u2665"
-  emptyHeart: "\u2661"
   heartSeparator: ' '
+  lostHeartFade: 0.28
 --- !u!1 &1744071342
 GameObject:
   m_ObjectHideFlags: 0
@@ -2654,6 +2654,58 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6420318220455498892, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
   m_PrefabInstance: {fileID: 2051540275}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2111083836
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2111083838}
+  - component: {fileID: 2111083837}
+  m_Layer: 0
+  m_Name: '[PlayArea]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2111083837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111083836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b3ac8011e8dc04eb1a0104e29e8b45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.PlayArea
+  halfWidth: 9
+  forwardExtent: 4
+  backExtent: 3
+  showOutline: 1
+  outlineColor: {r: 0.3, g: 0.9, b: 1, a: 0.9}
+  outlineWidth: 0.08
+  outlineYOffset: 0.02
+  outlineMaterial: {fileID: 0}
+--- !u!4 &2111083838
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111083836}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2835803000196667835
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2662,6 +2714,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 39149890905091547, guid: 60b25311c8bf5e54396b381729f247f8, type: 3}
+      propertyPath: playArea
+      value: 
+      objectReference: {fileID: 2111083837}
     - target: {fileID: 1297657157248715752, guid: 60b25311c8bf5e54396b381729f247f8, type: 3}
       propertyPath: m_Name
       value: Character_Gremlin
@@ -2778,3 +2834,4 @@ SceneRoots:
   - {fileID: 2835803000196667835}
   - {fileID: 7847410614580333937}
   - {fileID: 308751533}
+  - {fileID: 2111083838}

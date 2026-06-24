@@ -6,9 +6,10 @@ using UnityEngine.InputSystem;
 namespace _Project.Code.Gameplay {
     /// <summary>
     ///     The sock-gremlin the player drives down the drum. A "treadmill" runner: the gremlin holds a
-    ///     fixed Z while the world scrolls toward it (see <see cref="ScrollingItem" />), so it only
-    ///     steers left/right across a flat lane and hops. Steering is analog (Temple Run feel): the
-    ///     further you push, the faster it slides, smoothed and clamped to the drum's half-width.
+    ///     fixed Z while the world scrolls toward it (see <see cref="ScrollingItem" />), so it steers
+    ///     left/right across the lane, eases a little forward/back, and hops. Steering and depth are
+    ///     analog (Temple Run feel): the further you push, the faster it slides, smoothed and clamped
+    ///     to the <see cref="PlayArea" /> (or the legacy half-width when no Play Area is assigned).
     ///
     ///     Input is code-defined and live only in the <see cref="GameStateNames.Playing" /> state,
     ///     mirroring <c>PauseMenuController</c>. The gremlin scans for overlapping socks/obstacles each
@@ -19,10 +20,19 @@ namespace _Project.Code.Gameplay {
     ///     floor collider under it to stay grounded. Assign the StateEntered / StateExited events.
     /// </summary>
     public class GremlinRunner : MonoBehaviour {
-        [Header("Steering")]
+        [Header("Steering (left/right)")]
         [SerializeField] private float steerSpeed = 8f;
+        [Tooltip("Legacy left/right limit, used only when no Play Area is assigned. With a Play Area, " +
+                 "its width wins.")]
         [SerializeField] private float halfWidth = 2.5f;
         [SerializeField] private float steerSmoothing = 12f;
+
+        [Header("Movement area & depth (forward/back)")]
+        [Tooltip("The rectangle the gremlin may move in. Drives the left/right AND forward/back limits " +
+                 "and the on-screen boundary. Required for forward/back motion.")]
+        [SerializeField] private PlayArea playArea;
+        [SerializeField] private float depthSpeed = 6f;
+        [SerializeField] private float depthSmoothing = 12f;
 
         [Header("Jump")]
         [SerializeField] private float jumpHeight = 2f;
@@ -40,9 +50,11 @@ namespace _Project.Code.Gameplay {
         private readonly Collider[] _itemHits = new Collider[16];
         private InputAction _steerAction;
         private InputAction _jumpAction;
+        private InputAction _depthAction;
 
         private float _horizontalVelocity; // smoothed sideways velocity
         private float _verticalVelocity;   // gravity + jump
+        private float _depthVelocity;      // smoothed forward/back velocity
         private bool _inputActive;
 
         private void Awake() {
@@ -73,6 +85,13 @@ namespace _Project.Code.Gameplay {
             _jumpAction.AddBinding("<Keyboard>/upArrow");
             _jumpAction.AddBinding("<Gamepad>/buttonSouth");
 
+            // Forward/back. W = toward the oncoming items (+Z), S = retreat (-Z); gamepad stick Y.
+            _depthAction = new InputAction("Depth", expectedControlType: "Axis");
+            _depthAction.AddCompositeBinding("1DAxis")
+                .With("Negative", "<Keyboard>/s")
+                .With("Positive", "<Keyboard>/w");
+            _depthAction.AddBinding("<Gamepad>/leftStick/y");
+
             if (stateEntered != null) {
                 stateEntered.Event += HandleStateEntered;
             }
@@ -95,6 +114,7 @@ namespace _Project.Code.Gameplay {
 
             _steerAction?.Dispose();
             _jumpAction?.Dispose();
+            _depthAction?.Dispose();
         }
 
         private void Update() {
@@ -118,18 +138,43 @@ namespace _Project.Code.Gameplay {
 
             _verticalVelocity += gravity * Time.deltaTime;
 
-            // No forward (Z) component - the world scrolls toward us instead.
-            Vector3 velocity = new Vector3(_horizontalVelocity, _verticalVelocity, 0f);
+            // Forward/back is opt-in via a Play Area; without one we keep the classic fixed-Z runner.
+            float depthTarget = playArea != null ? _depthAction.ReadValue<float>() * depthSpeed : 0f;
+            _depthVelocity = Mathf.Lerp(_depthVelocity, depthTarget, depthSmoothing * Time.deltaTime);
+
+            Vector3 velocity = new Vector3(_horizontalVelocity, _verticalVelocity, _depthVelocity);
             _controller.Move(velocity * Time.deltaTime);
 
-            ClampToDrum();
+            ClampToArea();
             ScanForItems();
         }
 
-        /// <summary>Keeps the gremlin inside the drum and kills sideways momentum on contact with the wall.</summary>
-        private void ClampToDrum() {
+        /// <summary>
+        ///     Keeps the gremlin inside its movement area, killing momentum on whichever axis hit a
+        ///     wall. Uses the <see cref="PlayArea" /> when assigned (left/right AND forward/back);
+        ///     otherwise falls back to the legacy fixed-Z clamp on <see cref="halfWidth" />.
+        /// </summary>
+        private void ClampToArea() {
             Transform mover = _controller.transform;
             Vector3 position = mover.position;
+
+            if (playArea != null) {
+                Vector3 clamped = playArea.Clamp(position);
+                if (!Mathf.Approximately(clamped.x, position.x)) {
+                    _horizontalVelocity = 0f;
+                }
+
+                if (!Mathf.Approximately(clamped.z, position.z)) {
+                    _depthVelocity = 0f;
+                }
+
+                if (clamped != position) {
+                    mover.position = clamped;
+                }
+
+                return;
+            }
+
             if (Mathf.Abs(position.x) > halfWidth) {
                 position.x = Mathf.Clamp(position.x, -halfWidth, halfWidth);
                 mover.position = position;
@@ -183,10 +228,13 @@ namespace _Project.Code.Gameplay {
             if (active) {
                 _steerAction.Enable();
                 _jumpAction.Enable();
+                _depthAction.Enable();
             } else {
                 _steerAction.Disable();
                 _jumpAction.Disable();
+                _depthAction.Disable();
                 _horizontalVelocity = 0f;
+                _depthVelocity = 0f;
             }
         }
     }

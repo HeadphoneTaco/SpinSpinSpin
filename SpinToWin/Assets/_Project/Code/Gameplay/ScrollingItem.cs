@@ -29,6 +29,9 @@ namespace _Project.Code.Gameplay {
     public abstract class ScrollingItem : MonoBehaviour {
         [SerializeField] private float fallbackSpeed = 10f;
         [SerializeField] private Transform body;
+        [Tooltip("Rotate the item to hug the drum wall as it rides the C — sells the 'pinned by " +
+                 "centripetal force' look. Off = keep its flat authored orientation.")]
+        [SerializeField] private bool alignToCurve = true;
 
         private IScrollingItemPool _pool;
         private float _despawnZ = -10f;
@@ -36,6 +39,7 @@ namespace _Project.Code.Gameplay {
         private ApproachCurve _curve;
         private bool _hasCurve;
         private float _phi; // current angle along the C (StartAngle -> 0)
+        private Quaternion _baseRotation = Quaternion.identity; // authored orientation, before any tilt
 
         /// <summary>The transform that rides the belt - the prefab root, even when this script is on a child.</summary>
         public Transform Body { get; private set; }
@@ -43,6 +47,9 @@ namespace _Project.Code.Gameplay {
         protected virtual void Awake() {
             // Cached at Instantiate, while the clone is still unparented, so root is its own root.
             Body = body != null ? body : transform.root;
+            // The prefab's authored rotation — curve tilt is layered on top of this each frame, so
+            // any per-item facing the artist set is preserved.
+            _baseRotation = Body.rotation;
         }
 
         protected virtual void OnEnable() {
@@ -75,14 +82,21 @@ namespace _Project.Code.Gameplay {
             if (_hasCurve && _curve.radius > 0f && _phi > 0f) {
                 // Sweep down the C by angle; keep the lane (x) we spawned in.
                 _phi -= _curve.AngularStep(speed, Time.deltaTime);
-                Vector2 zy = _curve.PointAt(Mathf.Max(_phi, 0f));
+                float phi = Mathf.Max(_phi, 0f);
+                Vector2 zy = _curve.PointAt(phi);
                 p.z = zy.x;
                 p.y = zy.y;
+                if (alignToCurve) {
+                    ApplyCurveTilt(phi);
+                }
             } else {
                 // Off the arc (reached the player, or no curve): slide straight out the back.
                 p.z -= speed * Time.deltaTime;
                 if (_hasCurve) {
                     p.y = _curve.groundY;
+                    if (alignToCurve) {
+                        ApplyCurveTilt(0f); // flat once it's down at the player
+                    }
                 }
             }
 
@@ -91,6 +105,17 @@ namespace _Project.Code.Gameplay {
             if (p.z <= _despawnZ) {
                 Despawn();
             }
+        }
+
+        /// <summary>
+        ///     Pitches the item about world X by the sweep angle so it lies against the drum wall — at
+        ///     phi its local up points along the inward radial (0, cos phi, -sin phi), toward the drum
+        ///     axis. Because an item pinned to the drum shares the drum's angular position, rotating by
+        ///     phi *is* turning with the drum, which sells the centripetal "stuck to the wall" look.
+        ///     phi = 0 (at the player) leaves it flat in its authored orientation.
+        /// </summary>
+        private void ApplyCurveTilt(float phi) {
+            Body.rotation = _curve.RotationAt(phi) * _baseRotation;
         }
 
         /// <summary>
