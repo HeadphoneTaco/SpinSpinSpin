@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6587145082141801286, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_Name
-      value: SOCK_SOCK
+      value: SOCK_CLASSIC
       objectReference: {fileID: 0}
     - target: {fileID: 6612379835711806400, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_LocalPosition.x
@@ -51,6 +51,10 @@ PrefabInstance:
     - target: {fileID: 6612379835711806400, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6794877438453297837, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
