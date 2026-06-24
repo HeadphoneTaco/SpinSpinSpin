@@ -97,7 +97,7 @@ Each item is a prefab **root** with `Code` / `Colliders` / `Mesh` children. Trig
    - *Radius* `10` and *Sweep Degrees* `180` define the **C** items ride down. Bigger radius = wider
      sweep and more reaction time; `180` = a full C, less = a gentler hook.
    - *Squish* `1` deforms the C's height to match the drum: below `1` = flatter, above `1` = taller /
-     more exaggerated (use this to sit the C against Pedro's curved interior).
+     more exaggerated (use this to sit the C against the curved drum interior).
    - *Spawn Spacing* `8` (smaller = denser), *Obstacle Chance* `0.55`, *Sock Chance* `0.7`.
 
    The **Scene view draws each lane's C as a gizmo** (yellow = the C the item rides, cyan = the arrival
@@ -127,6 +127,29 @@ cross-references in the Inspector; `TrackSpawner` and the items find `RunDirecto
 3. It auto-adapts to the mode: the timer hides itself in CollectSocks, the sock counter shows
    `X / target` in CollectSocks (just `X` in SurviveTime), and the banner shows **YOU WIN!** /
    **CRASHED!** when the run ends.
+4. **Sock fill bar (stripe slots):** drop the `Art/Sprites/SockBar` outline on the Canvas, then
+   inside it stack one **Image** per sock needed to win (= *Target Socks*), bottom to top - these are
+   the stripe slots. Plain white Images are fine for now; per-section strip art drops straight onto
+   them later. Drag the slots, in BOTTOM-to-TOP order, into `ScoreHud` -> *Sock Segments*. Each sock
+   you collect lights the next slot up, tinted with that sock's colour, so the bar fills in collection
+   order. Empty slots hide by default (*Hide Empty Segments* ON) so the bare outline shows; turn it
+   OFF to keep them visible at *Empty Segment Fade*.
+   - **Masking (sock-shaped fill):** `SockBar.png` is line-art only - its interior is transparent, so
+     it can't be the mask. Use `Art/Sprites/SockSilhouette` (a solid filled sock, generated from the
+     outline) as the stencil. Build: `SockBar` (empty container) -> child `Fill` = Image(SockSilhouette)
+     + **Mask** (uncheck *Show Mask Graphic*) + **Vertical Layout Group** (*Reverse Arrangement* ON,
+     Control + Force-Expand width/height ON) -> the slot Images live under `Fill` so they're clipped to
+     the sock -> then a sibling `Outline` = Image(SockBar striped) as the LAST child so it draws on top.
+     Reverse Arrangement makes the first child the bottom slot, so *Sock Segments* element 0 = Slot 1.
+   - **Each sock prefab needs a colour:** set *Fill Color* on its `Collectible`. Since socks spawn at
+     random, the bar fills with a random colour stack. (White = a blank placeholder stripe.)
+   - *Continuous fallback:* leave *Sock Segments* empty and assign a single *Sock Fill* Image instead
+     (Image Type=Filled, Vertical, Bottom). It eases bottom-up to `SockCount / TargetSocks`.
+5. **Hearts:** place one heart **Image** per life (left to right) and drag them into `ScoreHud` ->
+   *Heart Images*; drop `Art/Sprites/HeartSprite` into *Heart Sprite* to stamp them all at once. As
+   lives are lost they fade to *Lost Heart Fade* (*Dim Lost Hearts* ON) or hide outright (OFF).
+   Assigning heart Images overrides the legacy text hearts; the text-heart fields are the fallback
+   when *Heart Images* is empty.
 
 ## 7. Two playstyles + curved floor
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using _Project.Code.Core;
 using CoreUtils.GameEvents;
 using UnityEngine;
@@ -52,6 +53,8 @@ namespace _Project.Code.Gameplay {
         private float _distance;
         private int _lastReportedDistance;
         private float _graceUntil;
+        // One colour per collected sock, in pickup order - the HUD paints each onto the next stripe.
+        private readonly List<Color> _collectedColors = new List<Color>();
         public float Speed { get; private set; }
         public int SockCount { get; private set; }
         public int MaxHits => maxHits;
@@ -66,6 +69,8 @@ namespace _Project.Code.Gameplay {
         public float TargetTime => targetTime;
         public int TargetSocks => targetSocks;
         public bool TimerVisible => winMode == WinMode.SurviveTime;
+        /// <summary>The colour of each sock collected so far, in pickup order. One entry = one stripe.</summary>
+        public IReadOnlyList<Color> CollectedSockColors => _collectedColors;
 
         private void OnEnable() {
             Instance = this;
@@ -108,6 +113,7 @@ namespace _Project.Code.Gameplay {
         public void ResetRun() {
             Speed = baseSpeed;
             SockCount = 0;
+            _collectedColors.Clear();
             _distance = 0f;
             _lastReportedDistance = 0;
             ElapsedTime = 0f;
@@ -129,13 +135,23 @@ namespace _Project.Code.Gameplay {
             }
         }
 
-        /// <summary>Banks one (or more) socks. In CollectSocks mode, hitting the target wins the run.</summary>
+        /// <summary>Banks one (or more) socks with no stripe colour (defaults to white).</summary>
         public void CollectSock(int amount) {
+            CollectSock(amount, Color.white);
+        }
+
+        /// <summary>
+        ///     Banks a sock and records the colour it paints onto the next stripe of the sock bar.
+        ///     One call = one stripe, in collection order, so a random spawn order yields a random
+        ///     colour stack. In CollectSocks mode, hitting the target wins the run.
+        /// </summary>
+        public void CollectSock(int amount, Color fillColor) {
             if (amount <= 0 || Outcome != RunOutcome.None) {
                 return;
             }
 
             SockCount += amount;
+            _collectedColors.Add(fillColor);
             if (sockCountChanged != null) {
                 sockCountChanged.Raise(SockCount);
             }
