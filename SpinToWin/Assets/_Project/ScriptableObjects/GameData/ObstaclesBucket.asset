@@ -25,4 +25,7 @@ MonoBehaviour:
   - Name: obstacle_keys
     Guid: adae89f335b520a4f9bebdf711e88c8a
     Asset: {fileID: 4118287899096396789, guid: adae89f335b520a4f9bebdf711e88c8a, type: 3}
+  - Name: obstacle_airpodscase
+    Guid: c5948c9b0ee752a47bf65594df5e8ed3
+    Asset: {fileID: 5300456653616115814, guid: c5948c9b0ee752a47bf65594df5e8ed3, type: 3}
   m_ManualUpdate: 0

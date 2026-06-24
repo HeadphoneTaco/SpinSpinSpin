@@ -19,12 +19,6 @@ MonoBehaviour:
   - Name: sock_argyle
     Guid: 159391744d128b84898ca6d36e191806
     Asset: {fileID: 6444848424833019453, guid: 159391744d128b84898ca6d36e191806, type: 3}
-  - Name: sock_plain
-    Guid: 1c059958885c20744bf7868bbf68388b
-    Asset: {fileID: 5143570134925344512, guid: 1c059958885c20744bf7868bbf68388b, type: 3}
-  - Name: testsock
-    Guid: 24a57240af5a6dd4b9f5dd9bd50866c8
-    Asset: {fileID: 6654956443312491039, guid: 24a57240af5a6dd4b9f5dd9bd50866c8, type: 3}
   - Name: sock_gym
     Guid: 2cc96c4c475cdbd46b4535bb2ec4976c
     Asset: {fileID: 3780380509229768533, guid: 2cc96c4c475cdbd46b4535bb2ec4976c, type: 3}
