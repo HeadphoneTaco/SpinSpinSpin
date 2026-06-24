@@ -16,64 +16,64 @@ MonoBehaviour:
   m_Sources:
   - {fileID: 102900000, guid: 350501081e08ed54aa83a90e67c5a4a5, type: 3}
   m_AssetRefs:
-  - Name: sock_argyle
-    Guid: 159391744d128b84898ca6d36e191806
-    Asset: {fileID: 6444848424833019453, guid: 159391744d128b84898ca6d36e191806, type: 3}
-  - Name: sock_gym
-    Guid: 2cc96c4c475cdbd46b4535bb2ec4976c
-    Asset: {fileID: 3780380509229768533, guid: 2cc96c4c475cdbd46b4535bb2ec4976c, type: 3}
-  - Name: sock_frills
-    Guid: 35517795ce71c5148ad65fb234dc37c5
-    Asset: {fileID: 2855095231172356276, guid: 35517795ce71c5148ad65fb234dc37c5, type: 3}
-  - Name: socksock
+  - Name: sock_puppet
+    Guid: 073cde8e16509504eb29ddf87cf9c466
+    Asset: {fileID: 6349376995393473192, guid: 073cde8e16509504eb29ddf87cf9c466, type: 3}
+  - Name: sock_polka
+    Guid: 22c5cc620fd9dac44adb27f9d45d2cd3
+    Asset: {fileID: 6349376995393473192, guid: 22c5cc620fd9dac44adb27f9d45d2cd3, type: 3}
+  - Name: sock_christmas
+    Guid: 26db234c13caba2449bf062f8651e9f1
+    Asset: {fileID: 6349376995393473192, guid: 26db234c13caba2449bf062f8651e9f1, type: 3}
+  - Name: sock_sock
     Guid: 37f582c7ac57fec44bc0d8dc7f32ed11
     Asset: {fileID: 6587145082141801286, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
-  - Name: sock_berry
-    Guid: 38a206b8402f032429f2e63e2e45fc85
-    Asset: {fileID: 7889157603284068322, guid: 38a206b8402f032429f2e63e2e45fc85, type: 3}
-  - Name: sock_classic
-    Guid: 3f7feef6d7a7b704d853215decec3f97
-    Asset: {fileID: 8923761032481312628, guid: 3f7feef6d7a7b704d853215decec3f97, type: 3}
-  - Name: sock_fishnet
-    Guid: 45fc165d12132884f95373351785f35b
-    Asset: {fileID: 533760618323208383, guid: 45fc165d12132884f95373351785f35b, type: 3}
-  - Name: sock_shark
-    Guid: 67347880509cdf2438f9346fb8792409
-    Asset: {fileID: 4538332426658641697, guid: 67347880509cdf2438f9346fb8792409, type: 3}
   - Name: sock_rainbow
-    Guid: 72abfd029ca6008429139b0d807b12b8
-    Asset: {fileID: 4801299803315095701, guid: 72abfd029ca6008429139b0d807b12b8, type: 3}
+    Guid: 4a3f843643522944e82eab437346dddb
+    Asset: {fileID: 6349376995393473192, guid: 4a3f843643522944e82eab437346dddb, type: 3}
+  - Name: sock_fuzzy
+    Guid: 645b849065ef84b429ec81b91a9f0d22
+    Asset: {fileID: 6349376995393473192, guid: 645b849065ef84b429ec81b91a9f0d22, type: 3}
+  - Name: sock_shark
+    Guid: 72bcc4b07f6cdfb4d8e5d01d6c8c5566
+    Asset: {fileID: 6349376995393473192, guid: 72bcc4b07f6cdfb4d8e5d01d6c8c5566, type: 3}
+  - Name: sock_beer
+    Guid: 7a00247b7767b074f85ef259312fb7ba
+    Asset: {fileID: 6349376995393473192, guid: 7a00247b7767b074f85ef259312fb7ba, type: 3}
+  - Name: sock_gym
+    Guid: 7b7b48b505883db43a307a997ce6577a
+    Asset: {fileID: 6349376995393473192, guid: 7b7b48b505883db43a307a997ce6577a, type: 3}
   - Name: sock_ankle
     Guid: 84a7b6d920bcd6e458b9e76c67470c25
-    Asset: {fileID: 5805951766264958091, guid: 84a7b6d920bcd6e458b9e76c67470c25, type: 3}
+    Asset: {fileID: 6349376995393473192, guid: 84a7b6d920bcd6e458b9e76c67470c25, type: 3}
+  - Name: sock_duck
+    Guid: 8f62d3e0e36be584b9c9b77ebbf5b151
+    Asset: {fileID: 6349376995393473192, guid: 8f62d3e0e36be584b9c9b77ebbf5b151, type: 3}
   - Name: sock_angel
     Guid: 9f80946321f59dd4991835883a74860b
-    Asset: {fileID: 5531548283606541386, guid: 9f80946321f59dd4991835883a74860b, type: 3}
+    Asset: {fileID: 1330078041063980272, guid: 9f80946321f59dd4991835883a74860b, type: 3}
+  - Name: sock_argyle
+    Guid: a2cb3ef70e6fd46468cef2994ccbdc53
+    Asset: {fileID: 6349376995393473192, guid: a2cb3ef70e6fd46468cef2994ccbdc53, type: 3}
+  - Name: sock_fishnet
+    Guid: c35d01b79a2eea14f833c6719b09b9af
+    Asset: {fileID: 6349376995393473192, guid: c35d01b79a2eea14f833c6719b09b9af, type: 3}
   - Name: sock_devil
-    Guid: af24216b1bd4e9b4e939a89fad6cf52e
-    Asset: {fileID: 3057573848591405903, guid: af24216b1bd4e9b4e939a89fad6cf52e, type: 3}
-  - Name: sock_christmas
-    Guid: b5b33f08d82ce82469ff5f0519695f59
-    Asset: {fileID: 7440725344402323542, guid: b5b33f08d82ce82469ff5f0519695f59, type: 3}
-  - Name: sock_duck
-    Guid: c37a4d6d86114394e8463a4e487dd026
-    Asset: {fileID: 5058188472461773057, guid: c37a4d6d86114394e8463a4e487dd026, type: 3}
+    Guid: c741cd1c9457e4944812bbedb0aae767
+    Asset: {fileID: 6349376995393473192, guid: c741cd1c9457e4944812bbedb0aae767, type: 3}
+  - Name: sock_classic
+    Guid: c816bbb168f47514b9bdcffbb4616f7f
+    Asset: {fileID: 6349376995393473192, guid: c816bbb168f47514b9bdcffbb4616f7f, type: 3}
   - Name: sock_gold
     Guid: d2082afe7324122459e099b5ee42be95
-    Asset: {fileID: 7671036413645549449, guid: d2082afe7324122459e099b5ee42be95, type: 3}
-  - Name: sock_polka
-    Guid: da3cae22cfd8a9e47b513e4d14a0530c
-    Asset: {fileID: 8292916796645187875, guid: da3cae22cfd8a9e47b513e4d14a0530c, type: 3}
+    Asset: {fileID: 3152893126011571171, guid: d2082afe7324122459e099b5ee42be95, type: 3}
+  - Name: sock_frills
+    Guid: d5d38bdb082393e44945cde06cddaf79
+    Asset: {fileID: 6349376995393473192, guid: d5d38bdb082393e44945cde06cddaf79, type: 3}
   - Name: sock_invisible
-    Guid: ddd16c5af7b75d0448ea3462d035479f
-    Asset: {fileID: 8610395452265532499, guid: ddd16c5af7b75d0448ea3462d035479f, type: 3}
-  - Name: sock_fuzzy
-    Guid: f5c6de12bd4aecb40885e17bafe68c21
-    Asset: {fileID: 6411176954935665044, guid: f5c6de12bd4aecb40885e17bafe68c21, type: 3}
-  - Name: sock_puppet
-    Guid: f701dae9101f8884ebe835936811b623
-    Asset: {fileID: 7113460910545379757, guid: f701dae9101f8884ebe835936811b623, type: 3}
-  - Name: sock_beer
-    Guid: f796f7d44848d544ba8b9ea950a6c5a6
-    Asset: {fileID: 717441879293123604, guid: f796f7d44848d544ba8b9ea950a6c5a6, type: 3}
+    Guid: ddc0e0b6bf67a264d8846e7689bc9e75
+    Asset: {fileID: 6349376995393473192, guid: ddc0e0b6bf67a264d8846e7689bc9e75, type: 3}
+  - Name: sock_berry
+    Guid: e0307a4f11637704ea6c497484ee71d0
+    Asset: {fileID: 6349376995393473192, guid: e0307a4f11637704ea6c497484ee71d0, type: 3}
   m_ManualUpdate: 0
