@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8459184560204769154}
   - component: {fileID: 3400632977658531311}
   m_Layer: 0
-  m_Name: SOCK_DEVIl
+  m_Name: SOCK_DEVIL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
