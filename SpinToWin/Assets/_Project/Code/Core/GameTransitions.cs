@@ -54,7 +54,17 @@ namespace _Project.Code.Core {
             }
 
             if (SceneManager.GetActiveScene().name == targetScene) {
-                return;
+                // Already in the target scene, so normally there's nothing to load. The one
+                // exception: starting a FRESH run while already in the game scene (Play Again from
+                // the Game Over screen) must RELOAD it to wipe the old run. Resuming from pause also
+                // enters Playing, but must NOT reload - it has to continue the run in progress. Tell
+                // the two apart by the state we came from.
+                bool freshRun = stateName == GameStateNames.Playing
+                                && GameManager.Exists
+                                && GameManager.Instance.PreviousStateName != GameStateNames.Paused;
+                if (!freshRun) {
+                    return;
+                }
             }
 
             Run(LoadScene(targetScene));

@@ -19,6 +19,10 @@ namespace _Project.Code.Core {
         // (MainMenu from the title screen, Paused from the pause menu) instead of always MainMenu.
         private string _stateBeforeSettings;
 
+        // The state active just before the current one. Lets listeners (e.g. GameTransitions)
+        // tell a fresh start from a resume, since both enter Playing.
+        private string _previousStateName;
+
         /// <summary>The CoreUtils state machine driving the game.</summary>
         public StateMachine StateMachine => stateMachine;
 
@@ -35,6 +39,9 @@ namespace _Project.Code.Core {
         public string CurrentStateName => stateMachine != null && stateMachine.CurrentState != null
             ? stateMachine.CurrentState.name
             : null;
+
+        /// <summary>The state active immediately before the current one (null at boot).</summary>
+        public string PreviousStateName => _previousStateName;
 
         public bool IsState(string stateName) => CurrentStateName == stateName;
         public bool IsPlaying => IsState(GameStateNames.Playing);
@@ -128,6 +135,9 @@ namespace _Project.Code.Core {
                 return;
             }
 
+            // Remember where we're coming FROM before we switch, so listeners can tell a fresh
+            // start (Play / Play Again) from a resume - both end up entering Playing.
+            _previousStateName = CurrentStateName;
             stateMachine.ChangeState(stateName);
         }
 

@@ -192,3 +192,40 @@ flatten / exaggerate the C's height to match the drum interior.
   low. They're inside the gremlin's scan capsule (so they register) but their pivots are under the
   floor. Raise *Ground Y* to the gremlin's body height (§4).
 - **No socks or ha
+## 8. Playtest rough-ins — paddles, lane stripes, bubbles
+
+Three placeholder layers added from the in-class playtest notes. All are scene helpers (their own
+objects), not `Code`/`Mesh`-split prefabs, and all are safe to re-skin into final art.
+
+### 8a. Full-width paddle obstacles (the drum fins — "jump or die")
+`TrackSpawner` now has a **Paddle Bucket** (`PrefabBucket`) and a **Paddle Chance** (default 0.12).
+When a paddle fires it spawns one item centred across the whole drum (X = 0), so **no lane is clear that
+row** and the player must jump it. A sock may still ride a lane on top as a reward.
+
+- The paddle prefab is just a normal **`Obstacle`** prefab (same `Code`/`Colliders`/`Mesh` split) with a
+  **wide** mesh + collider spanning `±halfWidth`, and a **short** one. Keep the collider top well under
+  the gremlin's `jumpHeight` (default **2**) so a jump clears it — aim for a collider ~0.6–0.9 tall at
+  ground height. Too tall and it becomes an unfair wall.
+- Point Paddle Bucket at a folder of paddle prefabs (or one) the same way as the sock/obstacle buckets.
+- Tune Paddle Chance up for a jumpier game; 0 disables paddles entirely.
+
+### 8b. Dashed lane lines (`LaneStripes`)
+Put `LaneStripes` on its own object in `Main`. It draws a scrolling dashed guide down each lane and
+slides the dashes toward the gremlin at the run Speed, so lanes read clearly *and* the floor visibly
+rushes past (helps the "too fast / no routing" read).
+
+- **Match these to `TrackSpawner`:** `Half Width`, `Lane Count`, `Ground Y`. Set `Far Z` at/above where
+  items appear and `Near Z` to `TrackSpawner.despawnZ`.
+- Dash look: `Dash Length` / `Gap Length` / `Line Width`. Leave `Material` empty for a flat tint, or drop
+  a striped/worn material on it for final art.
+- `Speed Scale` 1 matches the world; `Idle Speed` lets the stripes crawl even when not in a run.
+- Generated dashes have their colliders stripped, so they never touch the gremlin's scan or movement.
+
+### 8c. Soap-bubble ambiance (`BubbleAmbiance`)
+Put `BubbleAmbiance` on an object roughly centred in the drum (it `RequireComponent`s a `ParticleSystem`
+and configures it in code). Bubbles drift up through the interior.
+
+- Set **Box Size** to the drum's inside so bubbles fill it. Tune **Rate / Rise Speed / Drift** for flow,
+  **Min/Max Size / Lifetime / Opacity / Tint** for look.
+- Purely cosmetic — no colliders, no gameplay hooks — so it's safe in every state. Swap the particle
+  renderer's material for a real bubble sprite to finish it.

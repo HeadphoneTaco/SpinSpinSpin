@@ -19,6 +19,9 @@ namespace _Project.Code.Gameplay {
         [Header("Prefabs (PrefabBuckets)")]
         [SerializeField] private PrefabBucket sockBucket;
         [SerializeField] private PrefabBucket obstacleBucket;
+        [Tooltip("Optional full-width 'paddle' fins. When one spawns it spans the WHOLE drum and " +
+                 "must be jumped - that row has no clear lane. Leave empty to disable paddles.")]
+        [SerializeField] private PrefabBucket paddleBucket;
 
         [Header("Track shape")]
         [Tooltip("Z the gremlin runs at; the bottom of every C sits here.")]
@@ -45,6 +48,10 @@ namespace _Project.Code.Gameplay {
         [SerializeField] private float spawnSpacing = 8f;
         [Range(0f, 1f)] [SerializeField] private float obstacleChance = 0.55f;
         [Range(0f, 1f)] [SerializeField] private float sockChance = 0.7f;
+        [Tooltip("Chance per row to throw a full-width paddle instead of the normal obstacle row. " +
+                 "The paddle blocks every lane, so the player has to jump it. A sock can still ride " +
+                 "a lane that row as a reward for clearing it.")]
+        [Range(0f, 1f)] [SerializeField] private float paddleChance = 0.12f;
 
         private readonly Dictionary<GameObject, Stack<ScrollingItem>> _poolFor = new();
         private readonly Dictionary<ScrollingItem, GameObject> _prefabOf = new();
@@ -74,6 +81,19 @@ namespace _Project.Code.Gameplay {
 
         private void SpawnRow() {
             int lanes = Mathf.Max(1, laneCount);
+
+            // Full-width paddle first: it blocks every lane, so it replaces the normal obstacle row
+            // and the player must jump. A sock may still ride a lane on top as a reward for clearing it.
+            GameObject paddle = RandomPrefab(paddleBucket);
+            if (paddle != null && Random.value < paddleChance) {
+                SpawnFullWidth(paddle);
+                GameObject reward = RandomPrefab(sockBucket);
+                if (reward != null && Random.value < sockChance) {
+                    SpawnItem(reward, Random.Range(0, lanes));
+                }
+
+                return;
+            }
 
             // An obstacle and a sock land in two different lanes; either may sit the row out.
             int obstacleLane = Random.Range(0, lanes);
@@ -123,6 +143,24 @@ namespace _Project.Code.Gameplay {
 
             item.Configure(this, despawnZ, curve);
             item.Body.position = new Vector3(x, start.y, start.x);
+            item.Body.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        ///     Spawns one item centred across the whole drum (X = 0) - a paddle that spans every lane.
+        ///     The prefab carries its own wide Mesh + Collider; keep the collider SHORT (top well under
+        ///     the gremlin's jumpHeight, ~2) so a jump clears it.
+        /// </summary>
+        private void SpawnFullWidth(GameObject prefab) {
+            ScrollingItem item = GetFromPool(prefab);
+            if (item == null) {
+                return;
+            }
+
+            ApproachCurve curve = Curve;
+            Vector2 start = curve.PointAt(curve.StartAngle); // (z, y) at the top of the C
+            item.Configure(this, despawnZ, curve);
+            item.Body.position = new Vector3(0f, start.y, start.x);
             item.Body.gameObject.SetActive(true);
         }
 

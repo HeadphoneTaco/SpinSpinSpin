@@ -191,13 +191,85 @@ This pause screen uses **the painted art** for its look, with **invisible button
 painted ones** to catch the clicks. So you build: the art image, three transparent buttons, the
 countdown number, and the controller wiring.
 
-### 7.1 The art background
+### 7.1 Hierarchy — a `PauseOverlay` root (matches Settings & Game Over)
 
-1. Under the `Main` Canvas, `PausePanel` holds `PauseImage` (the painted art) as its first child. Set the
-   art's RectTransform pivot/anchors to **center** (a stretch pivot offset it — that bug is fixed).
-   Make sure `PauseImage` is the **top** child so it draws *behind* the buttons.
-2. Keep `PausePanel` **inactive** by default (the controller shows it on `Paused`).
+For consistency, pause uses the same shape as the settings and game-over overlays: a single
+**always-active overlay root** that holds the controller and toggles its child panel.
+
+```
+Canvas
+└─ PauseOverlay         ← always active; PauseMenuController lives here
+   ├─ PausePanel        ← the painted menu + buttons (toggled on/off by the controller)
+   │  ├─ PauseImage     (painted art; top child so it draws BEHIND the buttons)
+   │  ├─ Resume         (Button → PauseMenuController.resumeButton)
+   │  ├─ Settings       (GameStateButton, Action = Settings)
+   │  └─ QuitToMainMenu (GameStateButton, Action = MainMenu)
+   └─ CountdownRoot     ← the 3-2-1 number (shown only during resume)
+```
+
+1. Put `PauseMenuController` on the **`PauseOverlay`** root — **never** on `PausePanel`. If the script
+   sat on the panel it toggles, hiding the panel would disable the script and it could never reopen.
+   The component now logs an error if Pause Panel is set to its own object.
+2. `PauseImage` is the **top** child of `PausePanel` so it draws *behind* the transparent buttons; set
+   its RectTransform anchors/pivot to **center**.
+3. Keep `PausePanel` and `CountdownRoot` **inactive** by default — the controller shows them.
 
 ### 7.2 Transparent buttons over the painted ones
 
-the painted art shows three buttons — **PLAY**, **SETTINGS**, *
+The painted art shows three buttons — **RESUME**, **SETTINGS**, **QUIT**. Rather than draw new button
+graphics, lay an invisible `Button` over each painted one to catch the click:
+
+1. Add a UI `Button` per painted button, sized and positioned over the art.
+2. On each Button's `Image`: set **alpha = 0** (invisible) but keep **Raycast Target ON** so it still
+   catches clicks, set the Button's **Transition = None**, and delete the child Text.
+3. Wire them: Resume → `PauseMenuController.resumeButton` (it runs the 3-2-1 countdown, so it is *not* a
+   GameStateButton); Settings → `GameStateButton` Action **Settings**; Quit → `GameStateButton` Action
+   **MainMenu**.
+
+### 7.3 Wire the controller
+
+On `PauseMenuController` (on the `PauseOverlay` root) assign: **Pause Panel** (`PausePanel`), **Resume
+Button**, **Main Menu Button** (optional), **Countdown Root** + **Countdown Text** + **Countdown
+Seconds**, and the shared **State Entered / State Exited** `GameEventString` assets.
+
+## 8. Game Over screen — **`Main` (gameplay) scene**
+
+`GameOverScreen` (`Code/UI/GameOverScreen.cs`) is the third overlay and uses the **same pattern** as
+Settings and Pause: the script sits on an always-active **`GameOverOverlay`** root and toggles child
+panels. The twist is there are **two** panels — a **`WinPanel`** and a **`LosePanel`** — and it shows
+whichever matches `RunDirector.Outcome`, then fills that panel's run stats.
+
+### 8.1 Hierarchy
+
+```
+Canvas
+└─ GameOverOverlay      ← always active; GameOverScreen lives here
+   ├─ WinPanel          ← shown on a WIN (toggled by the controller)
+   │  ├─ WinImage       (painted "YOU WIN" art)
+   │  ├─ SocksAmount / DistanceAmount / TimeAmount   (TMP stat labels)
+   │  ├─ PlayAgain      (GameStateButton, Action = Play)
+   │  └─ QuitToMainMenu (GameStateButton, Action = MainMenu)
+   └─ LosePanel         ← shown on a LOSS (its own copy of the above)
+      ├─ LoseImage      (painted "CRASHED" art)
+      ├─ SocksAmount / DistanceAmount / TimeAmount
+      ├─ PlayAgain      (GameStateButton, Action = Play)
+      └─ QuitToMainMenu (GameStateButton, Action = MainMenu)
+```
+
+Put `GameOverScreen` on the **`GameOverOverlay`** root (not on a panel — same footgun guard as the
+others). Keep `WinPanel` and `LosePanel` **inactive** by default. The painted Win/Lose images carry the
+"YOU WIN" / "CRASHED" text, so there is no separate title field — the panel art *is* the title.
+
+### 8.2 Buttons (no extra wiring)
+
+Same as everywhere: Play Again → `GameStateButton` Action **Play** (re-enters Playing, which reloads
+`Main` and resets the run — Restart was removed, Play does that job from here); Quit → `GameStateButton`
+Action **MainMenu**. Use the transparent-button-over-art trick from §7.2 if they are painted in.
+
+### 8.3 Wire it up
+
+On `GameOverScreen` assign: **Win Panel** + its **Socks / Distance / Time** TMP labels, **Lose Panel** +
+its **Socks / Distance / Time** labels, and the shared **State Entered / State Exited** `GameEventString`
+assets (the same two the pause and settings overlays use). The run already routes both win and loss
+through the GameOver state with `RunDirector.Outcome` set before the transition, so the screen just
+reads it.
