@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e422a8377b34d17a8190333a6bf94a6, type: 3}
+  m_Name: WaveIntroBucket
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.SpawnWaveBucket
+  m_BucketName: 
+  m_Sources:
+  - {fileID: 102900000, guid: 627adca0859fc4a44ab0efa21f43969f, type: 3}
+  m_AssetRefs:
+  - Name: intro_01_firstobstacles
+    Guid: c749179a3b3c31348889a2422dffb16d
+    Asset: {fileID: 11400000, guid: c749179a3b3c31348889a2422dffb16d, type: 2}
+  - Name: intro_02_firstpaddle
+    Guid: f928d175a0703874780ac802c50b112f
+    Asset: {fileID: 11400000, guid: f928d175a0703874780ac802c50b112f, type: 2}
+  m_ManualUpdate: 0

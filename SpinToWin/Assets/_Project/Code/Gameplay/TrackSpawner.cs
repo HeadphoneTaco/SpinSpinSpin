@@ -5,23 +5,41 @@ using UnityEngine;
 
 namespace _Project.Code.Gameplay {
     /// <summary>
-    ///     Feeds the belt. Drops socks and obstacles into <see cref="laneCount" /> fixed lanes across the
-    ///     drum at a steady spacing in world units (distance-based, so density stays honest as the run
-    ///     speeds up). Each item enters high and traces a "C" down the drum wall to the gremlin via
-    ///     <see cref="ApproachCurve" />; side-to-side lane (X) is separate so the player can steer.
+    ///     Feeds the belt. Two ways to decide what goes in each row, chosen automatically:
     ///
-    ///     Variety comes from CoreUtils <see cref="PrefabBucket" />s (one for socks, one for obstacles).
-    ///     Spacing is scaled by <see cref="RunDirector.SpawnSpacingScale" /> so CollectSocks mode ramps
-    ///     up frequency over time. Spent items recycle through a small per-prefab pool. Only runs while
-    ///     Playing. The Scene-view gizmo draws each lane's C so you can tune it without pressing Play.
+    ///     1. WAVE MODE (if any waves are assigned) - authored routing. Plays the Intro Waves once in
+    ///        bucket order to teach mechanics, then pulls Pool Waves at random. Each wave is a painted
+    ///        grid (see <see cref="SpawnWave" />); one wave row is spawned per row tick.
+    ///     2. RANDOM MODE (no waves assigned) - the original dice-roll fallback: a random obstacle and
+    ///        sock in two different lanes, with an occasional full-width paddle.
+    ///
+    ///     Either way THIS class owns placement: it maps a lane to its X, drops the item at the top of
+    ///     the C it rides down (<see cref="ApproachCurve" />), and recycles spent items through a small
+    ///     per-prefab pool. Row cadence is distance-based (so density stays honest as the run speeds up)
+    ///     and scaled by <see cref="RunDirector.SpawnSpacingScale" />. Only runs while Playing. The
+    ///     Scene-view gizmo draws each lane's C so you can tune the track without pressing Play.
     /// </summary>
     public class TrackSpawner : MonoBehaviour, IScrollingItemPool {
         [Header("Prefabs (PrefabBuckets)")]
+        [Tooltip("Common-tier socks ('o' cells, and every sock in random mode).")]
         [SerializeField] private PrefabBucket sockBucket;
+        [Tooltip("Uncommon-tier socks ('u' cells). Used in wave mode.")]
+        [SerializeField] private PrefabBucket uncommonSockBucket;
+        [Tooltip("Rare-tier socks ('r' cells). Used in wave mode - keep this bucket small/special.")]
+        [SerializeField] private PrefabBucket rareSockBucket;
         [SerializeField] private PrefabBucket obstacleBucket;
-        [Tooltip("Optional full-width 'paddle' fins. When one spawns it spans the WHOLE drum and " +
-                 "must be jumped - that row has no clear lane. Leave empty to disable paddles.")]
+        [Tooltip("Full-width 'paddle' fins. In random mode a paddle blocks every lane and must be " +
+                 "jumped; in wave mode a paddle cell places one in its lane (full-width prefabs go in " +
+                 "the middle column). Leave empty to disable paddles.")]
         [SerializeField] private PrefabBucket paddleBucket;
+
+        [Header("Waves (optional - authored routing)")]
+        [Tooltip("Waves played ONCE, in bucket order, at the start of a run to introduce mechanics. " +
+                 "Sort the bucket to control the teaching order. Leave empty to skip the intro.")]
+        [SerializeField] private SpawnWaveBucket introWaves;
+        [Tooltip("Waves pulled at RANDOM after the intro. If BOTH wave buckets are empty, the spawner " +
+                 "falls back to the random per-row logic (the Pacing section below).")]
+        [SerializeField] private SpawnWaveBucket poolWaves;
 
         [Header("Track shape")]
         [Tooltip("Z the gremlin runs at; the bottom of every C sits here.")]
@@ -43,20 +61,32 @@ namespace _Project.Code.Gameplay {
         [Tooltip("Vertical squish of the C: 1 = round, below 1 = flatter, above 1 = taller / exaggerated.")]
         [SerializeField] private float squish = 1f;
 
-        [Header("Pacing")]
-        [Tooltip("World-units between spawn rows. Smaller = denser track.")]
+        [Header("Pacing (random mode)")]
+        [Tooltip("World-units between spawn rows. Smaller = denser track. Used in both modes.")]
         [SerializeField] private float spawnSpacing = 8f;
         [Range(0f, 1f)] [SerializeField] private float obstacleChance = 0.55f;
         [Range(0f, 1f)] [SerializeField] private float sockChance = 0.7f;
-        [Tooltip("Chance per row to throw a full-width paddle instead of the normal obstacle row. " +
-                 "The paddle blocks every lane, so the player has to jump it. A sock can still ride " +
-                 "a lane that row as a reward for clearing it.")]
+        [Tooltip("Random mode only: chance per row to throw a full-width middle-lane paddle.")]
         [Range(0f, 1f)] [SerializeField] private float paddleChance = 0.12f;
 
         private readonly Dictionary<GameObject, Stack<ScrollingItem>> _poolFor = new();
         private readonly Dictionary<ScrollingItem, GameObject> _prefabOf = new();
 
         private float _distanceSinceSpawn;
+
+        // Random-mode paddle intro counter: hand out paddles in bucket order until each has appeared,
+        // then go random. Resets each run with the scene. (Wave mode does its own teaching via waves.)
+        private int _paddlesSpawned;
+
+        // Wave-mode playback state. _wave = the wave currently streaming out, _waveRow = the next of its
+        // rows to spawn, _introCursor = how many intro waves we've used. All reset each run with the scene.
+        private SpawnWave _wave;
+        private int _waveRow;
+        private int _introCursor;
+
+        private bool WavesAssigned =>
+            (introWaves != null && introWaves.Items.Length > 0) ||
+            (poolWaves != null && poolWaves.Items.Length > 0);
 
         private ApproachCurve Curve => new ApproachCurve {
             groundY = groundY,
@@ -80,21 +110,102 @@ namespace _Project.Code.Gameplay {
         }
 
         private void SpawnRow() {
+            if (WavesAssigned) {
+                SpawnWaveRow();
+            } else {
+                SpawnRandomRow();
+            }
+        }
+
+        // --- Wave mode -----------------------------------------------------------
+
+        /// <summary>Spawns the next row of the current wave, picking a new wave when one runs out.</summary>
+        private void SpawnWaveRow() {
+            if (_wave == null || _waveRow >= _wave.RowCount) {
+                _wave = NextWave();
+                _waveRow = 0;
+                if (_wave == null || _wave.RowCount == 0) {
+                    _wave = null; // empty/blank wave - try again next tick
+                    return;
+                }
+            }
+
+            WaveCell[] row = _wave.Row(_waveRow);
+            int lanes = Mathf.Max(1, laneCount);
+            for (int lane = 0; lane < row.Length && lane < lanes; lane++) {
+                SpawnCell(row[lane], lane);
+            }
+
+            _waveRow++;
+        }
+
+        /// <summary>Intro waves first (in bucket order, once each), then a random pool wave.</summary>
+        private SpawnWave NextWave() {
+            if (introWaves != null && _introCursor < introWaves.Items.Length) {
+                return introWaves.Items[_introCursor++];
+            }
+
+            if (poolWaves != null && poolWaves.Items.Length > 0) {
+                return poolWaves.Items[Random.Range(0, poolWaves.Items.Length)];
+            }
+
+            return null;
+        }
+
+        private void SpawnCell(WaveCell cell, int lane) {
+            switch (cell.Kind) {
+                case WaveCellKind.CommonSock:
+                    SpawnItem(RandomPrefab(sockBucket), lane);
+                    break;
+                case WaveCellKind.UncommonSock:
+                    SpawnItem(RandomPrefab(uncommonSockBucket), lane);
+                    break;
+                case WaveCellKind.RareSock:
+                    SpawnItem(RandomPrefab(rareSockBucket), lane);
+                    break;
+                case WaveCellKind.Obstacle:
+                    SpawnItem(RandomPrefab(obstacleBucket), lane);
+                    break;
+                case WaveCellKind.Paddle:
+                    SpawnItem(PaddleAt(cell.PaddleIndex), lane);
+                    break;
+                // Empty: nothing to do.
+            }
+        }
+
+        /// <summary>A specific paddle by bucket index, or the auto intro/random paddle when index &lt; 0 or out of range.</summary>
+        private GameObject PaddleAt(int index) {
+            if (paddleBucket == null) {
+                return null;
+            }
+
+            GameObject[] items = paddleBucket.Items;
+            if (items.Length == 0) {
+                return null;
+            }
+
+            return index >= 0 && index < items.Length ? items[index] : NextPaddle();
+        }
+
+        // --- Random mode (fallback) ---------------------------------------------
+
+        private void SpawnRandomRow() {
             int lanes = Mathf.Max(1, laneCount);
 
-            // Full-width paddle first: it blocks every lane, so it replaces the normal obstacle row
-            // and the player must jump. The paddle prefab is as wide as the whole play area, so it
-            // always spawns in the MIDDLE lane (X = 0) - dead-centre, grid-aligned. A sock may still
-            // ride a lane on top as a reward for clearing it.
-            GameObject paddle = RandomPrefab(paddleBucket);
-            if (paddle != null && Random.value < paddleChance) {
-                SpawnItem(paddle, MiddleLane);
-                GameObject reward = RandomPrefab(sockBucket);
-                if (reward != null && Random.value < sockChance) {
-                    SpawnItem(reward, Random.Range(0, lanes));
-                }
+            // Paddle row first: a full-width paddle blocks every lane (middle-lane prefab), so the
+            // player must jump. First paddles of a run come out in bucket order (NextPaddle) to
+            // introduce each variant; then random. A sock may ride a lane on top as a reward.
+            if (Random.value < paddleChance) {
+                GameObject paddle = NextPaddle();
+                if (paddle != null) {
+                    SpawnItem(paddle, MiddleLane);
+                    GameObject reward = RandomPrefab(sockBucket);
+                    if (reward != null && Random.value < sockChance) {
+                        SpawnItem(reward, Random.Range(0, lanes));
+                    }
 
-                return;
+                    return;
+                }
             }
 
             // An obstacle and a sock land in two different lanes; either may sit the row out.
@@ -115,9 +226,33 @@ namespace _Project.Code.Gameplay {
         }
 
         /// <summary>
+        ///     Picks the next paddle prefab. For the first paddles of a run it walks the bucket IN ORDER
+        ///     (one of each) so the player is introduced to every variant; once each has appeared it
+        ///     falls back to a random pick. Returns null if the paddle bucket is empty.
+        /// </summary>
+        private GameObject NextPaddle() {
+            if (paddleBucket == null) {
+                return null;
+            }
+
+            GameObject[] items = paddleBucket.Items;
+            if (items.Length == 0) {
+                return null;
+            }
+
+            GameObject chosen = _paddlesSpawned < items.Length
+                ? items[_paddlesSpawned] // intro: next in bucket order
+                : items[Random.Range(0, items.Length)]; // then random
+            _paddlesSpawned++;
+            return chosen;
+        }
+
+        // --- Placement + helpers -------------------------------------------------
+
+        /// <summary>
         ///     The centre lane index. For an odd lane count it's the exact middle (X = 0); for an even
-        ///     count it's the lane just past centre. Paddles spawn here so a full-width paddle sits
-        ///     dead-centre regardless of how many lanes there are.
+        ///     count it's the lane just past centre. Random-mode paddles spawn here so a full-width
+        ///     paddle sits dead-centre regardless of how many lanes there are.
         /// </summary>
         private int MiddleLane => Mathf.Clamp(Mathf.Max(1, laneCount) / 2, 0, Mathf.Max(1, laneCount) - 1);
 
@@ -141,6 +276,10 @@ namespace _Project.Code.Gameplay {
         }
 
         private void SpawnItem(GameObject prefab, int lane) {
+            if (prefab == null) {
+                return;
+            }
+
             ScrollingItem item = GetFromPool(prefab);
             if (item == null) {
                 return;

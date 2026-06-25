@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9905e5f181904194ad6cb66e08c9fccd, type: 3}
+  m_Name: SocksUncommonBucket
+  m_EditorClassIdentifier: CoreUtils::CoreUtils.AssetBuckets.PrefabBucket
+  m_BucketName: UncommonSocks
+  m_Sources:
+  - {fileID: 102900000, guid: d008c3b3324ccdf478146384814987ae, type: 3}
+  m_AssetRefs:
+  - Name: sock_christmas
+    Guid: 26db234c13caba2449bf062f8651e9f1
+    Asset: {fileID: 6349376995393473192, guid: 26db234c13caba2449bf062f8651e9f1, type: 3}
+  - Name: sock_beer
+    Guid: 7a00247b7767b074f85ef259312fb7ba
+    Asset: {fileID: 6349376995393473192, guid: 7a00247b7767b074f85ef259312fb7ba, type: 3}
+  - Name: sock_angel
+    Guid: 9f80946321f59dd4991835883a74860b
+    Asset: {fileID: 1330078041063980272, guid: 9f80946321f59dd4991835883a74860b, type: 3}
+  - Name: sock_fishnet
+    Guid: c35d01b79a2eea14f833c6719b09b9af
+    Asset: {fileID: 6349376995393473192, guid: c35d01b79a2eea14f833c6719b09b9af, type: 3}
+  - Name: sock_devil
+    Guid: c741cd1c9457e4944812bbedb0aae767
+    Asset: {fileID: 6349376995393473192, guid: c741cd1c9457e4944812bbedb0aae767, type: 3}
+  - Name: sock_frills
+    Guid: d5d38bdb082393e44945cde06cddaf79
+    Asset: {fileID: 6349376995393473192, guid: d5d38bdb082393e44945cde06cddaf79, type: 3}
+  - Name: sock_berry
+    Guid: e0307a4f11637704ea6c497484ee71d0
+    Asset: {fileID: 6349376995393473192, guid: e0307a4f11637704ea6c497484ee71d0, type: 3}
+  m_ManualUpdate: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9905e5f181904194ad6cb66e08c9fccd, type: 3}
   m_Name: PaddlesBucket
   m_EditorClassIdentifier: CoreUtils::CoreUtils.AssetBuckets.PrefabBucket
-  m_BucketName: 
+  m_BucketName: Paddles
   m_Sources:
   - {fileID: 102900000, guid: 9e4161bbe6337e648a11c7faf05f53d2, type: 3}
   m_AssetRefs:

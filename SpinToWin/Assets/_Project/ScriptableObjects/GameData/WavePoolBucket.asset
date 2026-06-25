@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e422a8377b34d17a8190333a6bf94a6, type: 3}
+  m_Name: WavePoolBucket
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.SpawnWaveBucket
+  m_BucketName: 
+  m_Sources:
+  - {fileID: 102900000, guid: 2404ef0fafdcf8943ad597202b4f43df, type: 3}
+  m_AssetRefs:
+  - Name: rare_x_shape
+    Guid: 1531accc6c30240499f47ae0137bd2cc
+    Asset: {fileID: 11400000, guid: 1531accc6c30240499f47ae0137bd2cc, type: 2}
+  - Name: ordinary_x_shape
+    Guid: 56a3933a06506314faa34b4ea4884590
+    Asset: {fileID: 11400000, guid: 56a3933a06506314faa34b4ea4884590, type: 2}
+  - Name: uncommon_x_shape
+    Guid: 8b07f5b43836bc5498e055434525d334
+    Asset: {fileID: 11400000, guid: 8b07f5b43836bc5498e055434525d334, type: 2}
+  m_ManualUpdate: 0

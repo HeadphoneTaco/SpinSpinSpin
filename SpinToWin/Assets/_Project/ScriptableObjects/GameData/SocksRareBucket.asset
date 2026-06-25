@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9905e5f181904194ad6cb66e08c9fccd, type: 3}
+  m_Name: SocksRareBucket
+  m_EditorClassIdentifier: CoreUtils::CoreUtils.AssetBuckets.PrefabBucket
+  m_BucketName: RareSocks
+  m_Sources:
+  - {fileID: 102900000, guid: 777342ec29f386a4fbf70d629e86ad6f, type: 3}
+  m_AssetRefs:
+  - Name: sock_puppet
+    Guid: 073cde8e16509504eb29ddf87cf9c466
+    Asset: {fileID: 6349376995393473192, guid: 073cde8e16509504eb29ddf87cf9c466, type: 3}
+  - Name: sock_shark
+    Guid: 72bcc4b07f6cdfb4d8e5d01d6c8c5566
+    Asset: {fileID: 6349376995393473192, guid: 72bcc4b07f6cdfb4d8e5d01d6c8c5566, type: 3}
+  - Name: sock_gold
+    Guid: d2082afe7324122459e099b5ee42be95
+    Asset: {fileID: 3152893126011571171, guid: d2082afe7324122459e099b5ee42be95, type: 3}
+  - Name: sock_invisible
+    Guid: ddc0e0b6bf67a264d8846e7689bc9e75
+    Asset: {fileID: 6349376995393473192, guid: ddc0e0b6bf67a264d8846e7689bc9e75, type: 3}
+  m_ManualUpdate: 0

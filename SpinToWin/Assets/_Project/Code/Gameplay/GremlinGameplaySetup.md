@@ -208,6 +208,7 @@ row** and the player must jump it. A sock may still ride a lane on top as a rewa
   ground height. Too tall and it becomes an unfair wall.
 - Point Paddle Bucket at a folder of paddle prefabs (or one) the same way as the sock/obstacle buckets.
 - Tune Paddle Chance up for a jumpier game; 0 disables paddles entirely.
+- **Intro order:** the first paddles of each run come out in **bucket order** (one of each) so the player meets every variant before they go random. Sort the Paddle Bucket alphabetically in the editor to set that order (e.g. basic / center / left / right).
 
 ### 8b. Dashed lane lines (`LaneStripes`)
 Put `LaneStripes` on its own object in `Main`. It draws a scrolling dashed guide down each lane and
