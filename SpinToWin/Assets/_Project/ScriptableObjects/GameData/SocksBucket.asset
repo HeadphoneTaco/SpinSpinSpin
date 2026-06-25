@@ -19,6 +19,9 @@ MonoBehaviour:
   - Name: sock_puppet
     Guid: 073cde8e16509504eb29ddf87cf9c466
     Asset: {fileID: 6349376995393473192, guid: 073cde8e16509504eb29ddf87cf9c466, type: 3}
+  - Name: sock_plain
+    Guid: 0817349d66809b44ba15d2ac3bef7d23
+    Asset: {fileID: 4853231448563364050, guid: 0817349d66809b44ba15d2ac3bef7d23, type: 3}
   - Name: sock_polka
     Guid: 22c5cc620fd9dac44adb27f9d45d2cd3
     Asset: {fileID: 6349376995393473192, guid: 22c5cc620fd9dac44adb27f9d45d2cd3, type: 3}

@@ -2760,7 +2760,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2995,7 +2995,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3093,7 +3093,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 276031253987488248, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2479256882031112894, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_Name
@@ -3101,19 +3101,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3203855940130682434, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3310451897833829616, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3582988725131715288, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4491217669965329309, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4849785538389954695, guid: 4e699c7c51a33bd49bcf6f91ffbc1732, type: 3}
       propertyPath: m_LocalScale.x
@@ -3336,7 +3336,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

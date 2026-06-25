@@ -8,6 +8,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4433269136071520129, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
+      propertyPath: fillColor.b
+      value: 0.50222504
+      objectReference: {fileID: 0}
+    - target: {fileID: 4433269136071520129, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
+      propertyPath: fillColor.g
+      value: 0.50222504
+      objectReference: {fileID: 0}
+    - target: {fileID: 4433269136071520129, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
+      propertyPath: fillColor.r
+      value: 0.509434
+      objectReference: {fileID: 0}
     - target: {fileID: 6587145082141801286, guid: 37f582c7ac57fec44bc0d8dc7f32ed11, type: 3}
       propertyPath: m_Name
       value: SOCK_ARGYLE

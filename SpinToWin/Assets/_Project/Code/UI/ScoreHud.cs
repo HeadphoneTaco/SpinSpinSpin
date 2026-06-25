@@ -33,6 +33,10 @@ namespace _Project.Code.UI {
         [SerializeField] private bool hideEmptySegments = true;
         [Tooltip("Opacity of an empty slot when not hidden.")]
         [Range(0f, 1f)] [SerializeField] private float emptySegmentFade = 0.12f;
+        [Tooltip("If a collected sock's Fill Color is (near) white/unset, keep the slot's own " +
+                 "designer colour instead of overwriting it - so a rainbow of slot colours shows " +
+                 "even before per-sock Fill Colors are set. Turn OFF to honour white socks literally.")]
+        [SerializeField] private bool keepSlotColorWhenSockWhite = true;
 
         [Header("Sock fill - continuous (fallback)")]
         [Tooltip("Single fill Image used only when no Sock Segments are assigned. Set Image Type=Filled, " +
@@ -150,7 +154,11 @@ namespace _Project.Code.UI {
 
                     if (i < filled) {
                         seg.enabled = true;
-                        seg.color = colors[i];
+                        Color sock = colors[i];
+                        bool nearWhite = sock.r > 0.98f && sock.g > 0.98f && sock.b > 0.98f && sock.a > 0.98f;
+                        if (!(keepSlotColorWhenSockWhite && nearWhite)) {
+                            seg.color = sock; // a real sock colour wins; white/unset leaves the slot's own colour
+                        }
                     } else if (hideEmptySegments) {
                         seg.enabled = false;
                     } else {

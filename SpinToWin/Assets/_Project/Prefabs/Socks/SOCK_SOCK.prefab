@@ -48,7 +48,7 @@ MonoBehaviour:
   body: {fileID: 0}
   alignToCurve: 1
   value: 1
-  fillColor: {r: 1, g: 1, b: 1, a: 1}
+  fillColor: {r: 0, g: 0, b: 0, a: 1}
   collectSfx: {fileID: 8300000, guid: a6f34bd73bbc26848a77d7ae27dfc2cb, type: 3}
 --- !u!1 &5291381000234040791
 GameObject:
