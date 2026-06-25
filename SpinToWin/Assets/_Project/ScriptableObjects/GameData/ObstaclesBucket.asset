@@ -16,19 +16,19 @@ MonoBehaviour:
   m_Sources:
   - {fileID: 102900000, guid: 74229674e3bd86a4f8eb1652281a9877, type: 3}
   m_AssetRefs:
-  - Name: obstacle_wallet
-    Guid: 5e8c1d7656ea44449a39e25568d5b157
-    Asset: {fileID: 6355736576099294460, guid: 5e8c1d7656ea44449a39e25568d5b157, type: 3}
-  - Name: obstacle_keychain
+  - Name: keychain_obstacle
     Guid: 6325a1514c068ee4eb4206592d3eabe0
     Asset: {fileID: 8547629880562877416, guid: 6325a1514c068ee4eb4206592d3eabe0, type: 3}
-  - Name: obstacle_dollar_bill
-    Guid: e94f3f7bf9271564ab34ba3ebb2493ce
-    Asset: {fileID: 5319780151581668629, guid: e94f3f7bf9271564ab34ba3ebb2493ce, type: 3}
-  - Name: obstacle_airpods_case
-    Guid: f0959c8666d73d941a9f64945dec52c3
-    Asset: {fileID: 5779352818745558164, guid: f0959c8666d73d941a9f64945dec52c3, type: 3}
-  - Name: obstacle_coin
-    Guid: fc9736145d28915498a36a8db5cc7131
-    Asset: {fileID: 4647633139773288429, guid: fc9736145d28915498a36a8db5cc7131, type: 3}
+  - Name: dollar_bill_obstacle
+    Guid: c8c249790f30c2b4db83ec263883890b
+    Asset: {fileID: 5319780151581668629, guid: c8c249790f30c2b4db83ec263883890b, type: 3}
+  - Name: airpods_case_obstacle
+    Guid: eb757b91f831fcc428e9b8e7afcd3b74
+    Asset: {fileID: 5779352818745558164, guid: eb757b91f831fcc428e9b8e7afcd3b74, type: 3}
+  - Name: wallet_obstacle
+    Guid: ed96e31cb1499be4d87dfdb6cf552c2a
+    Asset: {fileID: 2840592336946428341, guid: ed96e31cb1499be4d87dfdb6cf552c2a, type: 3}
+  - Name: coin_obstacle
+    Guid: f290511317fe80042a1f7ef4c7a4fb02
+    Asset: {fileID: 4647633139773288429, guid: f290511317fe80042a1f7ef4c7a4fb02, type: 3}
   m_ManualUpdate: 0
