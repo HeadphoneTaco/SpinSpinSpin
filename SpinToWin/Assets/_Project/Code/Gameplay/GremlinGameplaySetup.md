@@ -127,24 +127,26 @@ cross-references in the Inspector; `TrackSpawner` and the items find `RunDirecto
 3. It auto-adapts to the mode: the timer hides itself in CollectSocks, the sock counter shows
    `X / target` in CollectSocks (just `X` in SurviveTime), and the banner shows **YOU WIN!** /
    **CRASHED!** when the run ends.
-4. **Sock fill bar (stripe slots):** drop the `Art/Sprites/SockBar` outline on the Canvas, then
-   inside it stack one **Image** per sock needed to win (= *Target Socks*), bottom to top - these are
-   the stripe slots. Plain white Images are fine for now; per-section strip art drops straight onto
-   them later. Drag the slots, in BOTTOM-to-TOP order, into `ScoreHud` -> *Sock Segments*. Each sock
-   you collect lights the next slot up, tinted with that sock's colour, so the bar fills in collection
-   order. Empty slots hide by default (*Hide Empty Segments* ON) so the bare outline shows; turn it
-   OFF to keep them visible at *Empty Segment Fade*.
-   - **Masking (sock-shaped fill):** `SockBar.png` is line-art only - its interior is transparent, so
-     it can't be the mask. Use `Art/Sprites/SockSilhouette` (a solid filled sock, generated from the
-     outline) as the stencil. Build: `SockBar` (empty container) -> child `Fill` = Image(SockSilhouette)
-     + **Mask** (uncheck *Show Mask Graphic*) + **Vertical Layout Group** (*Reverse Arrangement* ON,
-     Control + Force-Expand width/height ON) -> the slot Images live under `Fill` so they're clipped to
-     the sock -> then a sibling `Outline` = Image(SockBar striped) as the LAST child so it draws on top.
-     Reverse Arrangement makes the first child the bottom slot, so *Sock Segments* element 0 = Slot 1.
-   - **Each sock prefab needs a colour:** set *Fill Color* on its `Collectible`. Since socks spawn at
-     random, the bar fills with a random colour stack. (White = a blank placeholder stripe.)
+4. **Sock fill bar (per-stripe sprites):** the bar is the sock built from ~20 stacked stripe slots
+   that light up one-by-one as socks are collected, each tinted by the colour of the sock collected.
+   - **Art:** one sprite per stripe, each exported at the FULL sock size with only its own band opaque
+     (white/greyscale so the sock colour tints it) and the rest transparent - so the stripes re-stack
+     into the whole sock. Plus `SockBarOutline` (the black line-art) for the frame on top.
+   - **Build:** under the `Main` Canvas make a `SockBar` RectTransform, sized/anchored where you want
+     the bar (top-right corner). Inside it create one **Image** per stripe (`Slot_01`...`Slot_20`),
+     select them all and **stretch each to full-rect** (anchors 0,0-1,1, all offsets 0) so they overlap
+     exactly. Set each slot's *Source Image* to its stripe sprite (Slot_01 = bottom band ... up). Add
+     `Outline` (= `SockBarOutline`) as the LAST child, also full-rect, so it draws on top. No mask and
+     no layout group - each sprite carries its own shape and position.
+   - **Wire:** drag the slots into `ScoreHud` -> *Sock Segments* in BOTTOM-to-TOP order. Each collected
+     sock lights the next slot, tinted with that sock's colour, so the bar fills in collection order.
+     Empty slots hide by default (*Hide Empty Segments* ON); turn OFF to keep them faded at
+     *Empty Segment Fade*.
+   - **Each sock prefab needs a colour:** set *Fill Color* on its `Collectible`. Socks spawn at random,
+     so the bar fills with a random colour stack. If a sock's colour is left white the slot keeps its
+     own designer colour (*Keep Slot Color When Sock White* ON).
    - *Continuous fallback:* leave *Sock Segments* empty and assign a single *Sock Fill* Image instead
-     (Image Type=Filled, Vertical, Bottom). It eases bottom-up to `SockCount / TargetSocks`.
+     (Image Type=Filled, Vertical, Bottom); it eases bottom-up to `SockCount / TargetSocks`.
 5. **Hearts:** place one heart **Image** per life (left to right) and drag them into `ScoreHud` ->
    *Heart Images*; drop `Art/Sprites/HeartSprite` into *Heart Sprite* to stamp them all at once. As
    lives are lost they fade to *Lost Heart Fade* (*Dim Lost Hearts* ON) or hide outright (OFF).
@@ -189,5 +191,4 @@ flatten / exaggerate the C's height to match the drum interior.
 - **Items sit below the floor (but still ding when collected)** → *Ground Y* on `TrackSpawner` is too
   low. They're inside the gremlin's scan capsule (so they register) but their pivots are under the
   floor. Raise *Ground Y* to the gremlin's body height (§4).
-- **No socks or hazards appear** → the matching **PrefabBucket** is empty or unassigned on `TrackSpawner` (§4).
-- **`Spinner.cs`** is the old Spin-to-Win test — delete it once this is in; it's unrelated.
+- **No socks or ha

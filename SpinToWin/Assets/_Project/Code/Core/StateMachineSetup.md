@@ -34,7 +34,7 @@ overlays (no scene load).
 
 - Camera — one fixed camera framing the bottle.
 - `[UI]` — the settings Canvas: the self-binding setting controls (Music/Sfx/HighContrast) on
-  Mina's bottle UI, plus a Back button (`GameStateButton` → MainMenu). No `[Managers]` here — they
+  the bottle UI, plus a Back button (`GameStateButton` → MainMenu). No `[Managers]` here — they
   persist from `Start`, so the controls still reach `GameManager.Instance`.
 
 **`Main` scene (inside the machine / gameplay):**
@@ -104,7 +104,7 @@ workflow, but nothing switches between framings anymore.)
 ## 4. Transitions (bubble cover → swap → reveal)
 
 The transition is a full-screen overlay that **covers** the screen, lets the swap happen while
-hidden, then **reveals**. The look is Mina's bubble animation; the mechanism is two scripts.
+hidden, then **reveals**. The look is the bubble animation; the mechanism is two scripts.
 
 - `GameTransitions` lives on `[Managers]` (`Start`). It listens to `StateEntered` and, on a
   scene change, calls `Cover → load → Reveal`.
@@ -112,8 +112,8 @@ hidden, then **reveals**. The look is Mina's bubble animation; the mechanism is 
   detaches to the root and persists at runtime; duplicates self-destruct). Build it as a
   **full-screen Canvas** (high Sort Order) + a **`TransitionEffect`** component:
   - **`CanvasGroupFadeEffect`** (+ a black Image + CanvasGroup) — the working placeholder.
-  - **`AnimatorTransitionEffect`** (+ an Animator + CanvasGroup) — swap to this when Mina's
-    bubble animation lands: drop her clips into the `Cover` / `Reveal` Animator states and set the
+  - **`AnimatorTransitionEffect`** (+ an Animator + CanvasGroup) — swap to this when the
+    bubble animation lands: drop the clips into the `Cover` / `Reveal` Animator states and set the
     clip durations on the component.
   Assign the effect to `ScreenTransition.Effect` (or just leave it as a child — it's auto-found).
 - It's found automatically via `ScreenTransition.Instance`, so nothing wires to `GameTransitions`.

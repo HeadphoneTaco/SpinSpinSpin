@@ -187,107 +187,17 @@ design. **Resuming plays a 3-2-1 countdown:** the game stays frozen while the co
 `PauseMenuController` calls `Resume()` to enter `Playing`. Every resume path (the button and Esc)
 goes through it. (No Restart button — that was removed.)
 
-This pause screen uses **Mina's painted art** for its look, with **invisible buttons placed over the
+This pause screen uses **the painted art** for its look, with **invisible buttons placed over the
 painted ones** to catch the clicks. So you build: the art image, three transparent buttons, the
 countdown number, and the controller wiring.
 
 ### 7.1 The art background
 
-1. Under the `Main` Canvas, `PausePanel` holds `PauseImage` (Mina's art) as its first child. Set the
+1. Under the `Main` Canvas, `PausePanel` holds `PauseImage` (the painted art) as its first child. Set the
    art's RectTransform pivot/anchors to **center** (a stretch pivot offset it — that bug is fixed).
    Make sure `PauseImage` is the **top** child so it draws *behind* the buttons.
 2. Keep `PausePanel` **inactive** by default (the controller shows it on `Paused`).
 
 ### 7.2 Transparent buttons over the painted ones
 
-Mina's art paints three buttons — **PLAY**, **SETTINGS**, **QUIT**. Put one invisible UI button over
-each. For every button:
-
-1. **Image → Color alpha = 0**, but leave **Raycast Target ON** (an alpha-0 image still takes clicks).
-2. **Button → Transition = None.** Otherwise the default Color-Tint transition repaints the image
-   visible on hover/press. (This is *the* gotcha for invisible buttons.)
-3. Delete/disable the button's child **Text (TMP)** — the label is in the art.
-4. Position/size its RectTransform over the painted button. Tip: bump alpha to ~80 while placing,
-   then back to 0.
-
-Map and wire each:
-
-| Painted button | Object       | How it acts                                                              |
-|----------------|--------------|--------------------------------------------------------------------------|
-| PLAY           | `Resume`     | Assign to **PauseMenuController → Resume Button** (triggers the countdown). |
-| SETTINGS       | `Settings`   | `GameStateButton`, `Action = Settings` (the `SettingsOverlay` instance in `Main` shows itself). |
-| QUIT           | `QuitToMenu` | `GameStateButton`, `Action = MainMenu` (returns to `Start` — NOT a desktop quit). |
-
-> **Delete the old `Restart` button GameObject** under `PausePanel` — that feature was removed and
-> the art has no Restart graphic.
->
-> Resume is the one button NOT driven by a `GameStateButton`: it must run the countdown, so it's
-> wired through `PauseMenuController.Resume Button` instead.
-
-### 7.3 The resume countdown
-
-1. Under the Canvas (above `PausePanel` so it draws on top, or its own child), make `CountdownRoot`
-   — an empty holding a large **TextMeshPro** number centered on screen. Set `CountdownRoot`
-   **inactive** by default.
-2. On **PauseMenuController**, assign **Countdown Root** = `CountdownRoot`, **Countdown Text** = the
-   TMP number, and leave **Countdown Seconds = 3** (set 0 to resume instantly).
-
-When you resume, the controller hides the menu, shows `CountdownRoot`, counts 3→2→1 (gameplay still
-frozen), then un-freezes. Want a "GO!" flash? Add it in `ResumeCountdown()` after the loop.
-
-### 7.4 Wire the controller
-
-Add **Pause Menu Controller** to a UI object and assign:
-
-- `Pause Panel` → `PausePanel`
-- `Resume Button` → the transparent `Resume` button (over PLAY)
-- `Countdown Root` → `CountdownRoot`; `Countdown Text` → the TMP number
-- `State Entered` → `ScriptableObjects/Events/StateEntered.asset`
-- `State Exited`  → `ScriptableObjects/Events/StateExited.asset`
-- `Main Menu Button` — optional; only if you wire QUIT through the controller instead of its own
-  `GameStateButton`. The SETTINGS button carries its own `GameStateButton` (`Action = Settings`), so
-  there's no settings field on the controller anymore.
-
-### 7.5 Settings (shared overlay)
-
-Pause reuses the **one `SettingsOverlay` prefab from §3** — there's no separate sub-panel. Place a
-`SettingsOverlay` instance in `Main` (above `PausePanel`), set inactive. The §7.2 SETTINGS button
-opens it via `GameStateButton` (`Action = Settings`): entering the `Settings` state exits `Paused`,
-so `PauseMenuController` hides the pause panel and the overlay shows itself. The overlay's exit button
-(`Action = CloseSettings`) — or **Esc** — returns to `Paused`, re-showing the pause panel. The sliders
-and toggle reach the persistent managers, so they work mid-run with no extra wiring.
-
-> Because settings opening exits `Paused`, **Esc while settings is open closes settings** (handled by
-> `SettingsOverlay`) rather than triggering the resume countdown. Esc only resumes from the pause
-> screen itself.
-
-### 7.6 Test
-
-1. **Play** from `Start` into `Main`.
-2. **Esc** → run freezes, art + invisible buttons appear.
-3. Click **PLAY** (Resume) or press **Esc** → menu hides, **3-2-1** counts down, *then* the run
-   continues. Gameplay stays frozen for the whole count.
-4. **SETTINGS** → pause panel hides, overlay opens; sliders change audio live; the exit button **or
-   Esc** returns to the pause screen. (Esc here closes settings, it does *not* resume.)
-5. **QUIT** → bubbles sweep back to the `Start` menu (app stays open).
-
-> Needs an **EventSystem** in the scene for clicks/sliders (Unity adds one with the first Canvas).
-
-## 8. High-contrast mode (plumbing only)
-
-The on/off setting, persistence, and broadcast signal exist; the **visual swap layer is not
-built yet** (pending the approach decision). To enable the broadcast:
-
-1. Add an **Accessibility Manager** component to the `[Managers]` object and assign the
-   `HighContrastChanged` event (`ScriptableObjects/Events/HighContrastChanged.asset`).
-2. The `HighContrastControl` on the Settings toggle already flips it. Once you pick a visual
-   approach, the color-swapping components subscribe to `HighContrastChanged`.
-
-Use the **Accessibility ▸ WCAG Contrast Checker** window to verify any high-contrast palette
-passes AA/AAA before wiring it.
-
-## Notes
-
-- Buttons use **TextMeshPro**; the first time you add one Unity may prompt to import TMP
-  Essentials — accept it.
-- If clicks do nothing, confirm an **EventSystem** exists in the scene.
+the painted art shows three buttons — **PLAY**, **SETTINGS**, *
