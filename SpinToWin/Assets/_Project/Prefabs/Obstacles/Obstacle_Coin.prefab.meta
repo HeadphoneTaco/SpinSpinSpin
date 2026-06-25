@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:SpinToWin/Assets/_Project/Prefabs/Obstacles/Obstacle_Keys.prefab.meta
-guid: fc9736145d28915498a36a8db5cc7131
-========
-guid: f290511317fe80042a1f7ef4c7a4fb02
->>>>>>>> pedrito:SpinToWin/Assets/_Project/Prefabs/Obstacles/coin_obstacle.prefab.meta
+guid: 2e5d99cc03f2d50498c57c453be058a5
 PrefabImporter:
   externalObjects: {}
   userData: 

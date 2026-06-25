@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:SpinToWin/Assets/_Project/Prefabs/Obstacles/Obstacle_AirpodsCase.prefab.meta
-guid: f0959c8666d73d941a9f64945dec52c3
-========
-guid: eb757b91f831fcc428e9b8e7afcd3b74
->>>>>>>> pedrito:SpinToWin/Assets/_Project/Prefabs/Obstacles/airpods_case_obstacle.prefab.meta
+guid: 5dc164553e1ee8f42b650bf607c27b9d
 PrefabImporter:
   externalObjects: {}
   userData: 
