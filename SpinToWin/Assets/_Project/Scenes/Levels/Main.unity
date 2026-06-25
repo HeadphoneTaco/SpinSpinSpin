@@ -1798,13 +1798,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1013034819}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.06901676, y: -0, z: -0, w: 0.9976155}
-  m_LocalPosition: {x: 0, y: 2.38, z: -6.19}
+  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
+  m_LocalPosition: {x: 0, y: 6, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 7.915, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
 --- !u!114 &1013034823
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2925,12 +2925,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.TrackSpawner
   sockBucket: {fileID: 11400000, guid: 2fd97146fa4eeb141b2fe3bf79aa7c39, type: 2}
   obstacleBucket: {fileID: 11400000, guid: 6da83f29c4ac6dc4095083749b63cace, type: 2}
-  paddleBucket: {fileID: 0}
+  paddleBucket: {fileID: 11400000, guid: a2d957737d3a05c4fbf2056aa0ca7843, type: 2}
   playerZ: 0
   groundY: 0
   despawnZ: -10
-  halfWidth: 4.34
-  laneCount: 6
+  halfWidth: 7
+  laneCount: 7
   radius: 27.5
   sweepDegrees: 140
   squish: 0.43
@@ -3423,7 +3423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b3ac8011e8dc04eb1a0104e29e8b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Code.Gameplay.PlayArea
-  halfWidth: 9
+  halfWidth: 7
   forwardExtent: 4
   backExtent: 3
   showOutline: 1

@@ -83,10 +83,12 @@ namespace _Project.Code.Gameplay {
             int lanes = Mathf.Max(1, laneCount);
 
             // Full-width paddle first: it blocks every lane, so it replaces the normal obstacle row
-            // and the player must jump. A sock may still ride a lane on top as a reward for clearing it.
+            // and the player must jump. The paddle prefab is as wide as the whole play area, so it
+            // always spawns in the MIDDLE lane (X = 0) - dead-centre, grid-aligned. A sock may still
+            // ride a lane on top as a reward for clearing it.
             GameObject paddle = RandomPrefab(paddleBucket);
             if (paddle != null && Random.value < paddleChance) {
-                SpawnFullWidth(paddle);
+                SpawnItem(paddle, MiddleLane);
                 GameObject reward = RandomPrefab(sockBucket);
                 if (reward != null && Random.value < sockChance) {
                     SpawnItem(reward, Random.Range(0, lanes));
@@ -111,6 +113,13 @@ namespace _Project.Code.Gameplay {
                 SpawnItem(sock, sockLane);
             }
         }
+
+        /// <summary>
+        ///     The centre lane index. For an odd lane count it's the exact middle (X = 0); for an even
+        ///     count it's the lane just past centre. Paddles spawn here so a full-width paddle sits
+        ///     dead-centre regardless of how many lanes there are.
+        /// </summary>
+        private int MiddleLane => Mathf.Clamp(Mathf.Max(1, laneCount) / 2, 0, Mathf.Max(1, laneCount) - 1);
 
         /// <summary>World X of a lane centre, spread evenly across the drum width.</summary>
         private float LaneX(int lane) {
@@ -143,24 +152,6 @@ namespace _Project.Code.Gameplay {
 
             item.Configure(this, despawnZ, curve);
             item.Body.position = new Vector3(x, start.y, start.x);
-            item.Body.gameObject.SetActive(true);
-        }
-
-        /// <summary>
-        ///     Spawns one item centred across the whole drum (X = 0) - a paddle that spans every lane.
-        ///     The prefab carries its own wide Mesh + Collider; keep the collider SHORT (top well under
-        ///     the gremlin's jumpHeight, ~2) so a jump clears it.
-        /// </summary>
-        private void SpawnFullWidth(GameObject prefab) {
-            ScrollingItem item = GetFromPool(prefab);
-            if (item == null) {
-                return;
-            }
-
-            ApproachCurve curve = Curve;
-            Vector2 start = curve.PointAt(curve.StartAngle); // (z, y) at the top of the C
-            item.Configure(this, despawnZ, curve);
-            item.Body.position = new Vector3(0f, start.y, start.x);
             item.Body.gameObject.SetActive(true);
         }
 

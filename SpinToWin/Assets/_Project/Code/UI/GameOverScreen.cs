@@ -9,7 +9,7 @@ namespace _Project.Code.UI {
     ///     Shows the end-of-run screen while the game is in the GameOver state and hides it otherwise.
     ///     Built like <see cref="SettingsOverlay" /> for consistency: this component lives on the
     ///     always-active GameOverOverlay root and toggles child panels, rather than switching itself
-    ///     off. The difference is there are TWO panels - a Win panel and a Loss panel - and it picks
+    ///     off. The difference is there are TWO panels - a Win panel and a Lose panel - and it picks
     ///     which to show from <see cref="RunDirector.Outcome" />, then fills that panel's run stats.
     ///
     ///     The Play Again / Quit buttons on each panel are plain <see cref="GameStateButton" />s

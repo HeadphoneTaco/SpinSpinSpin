@@ -22,9 +22,6 @@ MonoBehaviour:
   - Name: keychain_obstacle
     Guid: 6325a1514c068ee4eb4206592d3eabe0
     Asset: {fileID: 8547629880562877416, guid: 6325a1514c068ee4eb4206592d3eabe0, type: 3}
-  - Name: obstacle_paddle
-    Guid: 9f3257d7a7ccf3e40a010b205d10992e
-    Asset: {fileID: 8508633778605861677, guid: 9f3257d7a7ccf3e40a010b205d10992e, type: 3}
   - Name: obstacle_keys
     Guid: adae89f335b520a4f9bebdf711e88c8a
     Asset: {fileID: 4118287899096396789, guid: adae89f335b520a4f9bebdf711e88c8a, type: 3}
