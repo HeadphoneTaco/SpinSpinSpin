@@ -7,7 +7,7 @@ often rare socks show up. Anyone can make one — it's just text, no code.
 ## The big picture
 
 - The track has **7 lanes**. A wave is a block of **rows**; each row is one **spawn line** that streams
-  down the drum. The **top line arrives first** (farthest away), the bottom line last.
+  down the drum. The **top line of your text arrives first** (farthest away), the bottom line last.
 - Each row is a string of characters, **one character per lane, left → right**.
 - The `TrackSpawner` plays one wave row per spawn tick. When a wave finishes, it starts the next one.
 - **Two pools** feed it: **Intro Waves** play once, in order, at the start of a run (use these to teach —
@@ -23,16 +23,33 @@ o             common sock      (Sock Bucket)
 u             uncommon sock    (Uncommon Sock Bucket)
 r             rare sock        (Rare Sock Bucket)
 x  or #       obstacle         (Obstacle Bucket)
-p             paddle           (auto: shows each paddle variant in order, then random)
-0-9           a SPECIFIC paddle by bucket index (0 = first paddle in the Paddle Bucket)
+p             paddle, auto     (shows each variant once in order, then random)
+0-3           a SPECIFIC paddle variant (see Paddles & routing below)
 ```
 
 Letters are case-insensitive. Any character that isn't in the legend is treated as empty, so you can use
 `.` for gaps to keep the grid readable. A **blank line** is a full row of empty — a nice breather between
 clusters.
 
-Paddles are full-width and must be **jumped**. Put a full-width paddle in the **middle column** (lane 4
-of 7). If we add part-width paddles later, put their character in the lane(s) they should block.
+## Paddles & routing
+
+A paddle is a wall the gremlin has to **jump**. There are four variants, picked by the digit you paint —
+they match the prefabs in `Prefabs/Paddles`:
+
+- `0` **Basic** — low all the way across; jump in any lane.
+- `1` **Center** — raised block in the middle; hop the side lanes (the centre is walled off).
+- `2` **Left** — raised block on the left; hop the right lanes.
+- `3` **Right** — raised block on the right; hop the left lanes.
+
+`p` (lowercase) is the **auto** paddle — it shows each variant once in order, then goes random; handy in
+an intro wave. Put the paddle character in the **middle column (lane 3, columns are numbered 0–6)** so the
+full-width mesh centres correctly. The variant number — not where you type it — decides which lanes are
+walls and which are jumpable.
+
+In the preview a paddle row is the orange bar, marked per lane: **cyan lines = lanes you can hop**, **dark
+shading = the wall** you have to route around. That's the route the paddle forces, so you can place socks
+to reward the safe lane or bait a risky one. (Exact jumpable lanes per variant live in
+`Code/Editor/SpawnWaveInspector.cs` → `JumpableLanesByPaddle`, a dev can tune them there.)
 
 ## How to make a wave
 
@@ -77,12 +94,13 @@ A gentle intro wave — a lane of commons, then your first obstacle to dodge:
 ..x.o..
 ```
 
-Teach the paddle (full-width, middle column) with a reward sock for jumping it:
+Teach the Left paddle (`2`) — its left side is walled, so the player routes right and hops; the sock on
+the right rewards the safe lane:
 
 ```
-...o...
-...p...
-...o...
+.....o.
+...2...
+.....o.
 ```
 
 A routing pool wave — weave between obstacles, with one rare worth crossing for:
@@ -99,7 +117,17 @@ x.....x
 
 - Keep rows **7 characters wide** (one per lane). Shorter rows just leave the missing lanes empty; longer
   rows ignore the extras.
-- Always leave a **clear path** unless you mean to force a jump (a full-width paddle row is the one time
-  every lane is blocked).
+- Only the **Basic** paddle walls every lane. **Center / Left / Right** leave open (jumpable) lanes — use
+  them to craft the route, and watch the preview's cyan/dark to see which is which.
+- Outside of a paddle, always leave a **clear path** — don't block every lane with obstacles.
 - Lead hard clusters with an empty row or two so the player can read them coming.
 - Test in isolation: temporarily point **Pool Waves** at a bucket with just your wave to watch it loop.
+
+## Previewing a wave
+
+With a Spawn Wave asset selected, the Inspector draws a live colour grid under the text, oriented like the
+game: a blue **play-area** bar sits along the bottom (where the gremlin runs) and rows scroll down toward
+it, so the bottom row is the one that arrives first. (You still paint top-down — the first line arrives
+first — the preview just flips it to match the screen.) Sock tiers, obstacles and empties show as coloured
+cells; a paddle shows as an orange bar with **cyan jump lines** on the lanes you can hop and **dark
+shading** on the walled lanes. It uses the same parser the game does, so what you see is what spawns.

@@ -16,6 +16,9 @@ MonoBehaviour:
   m_Sources:
   - {fileID: 102900000, guid: 627adca0859fc4a44ab0efa21f43969f, type: 3}
   m_AssetRefs:
+  - Name: intro_02_secondpaddle
+    Guid: 439bee212ab840b478c29f67cf78112e
+    Asset: {fileID: 11400000, guid: 439bee212ab840b478c29f67cf78112e, type: 2}
   - Name: intro_01_firstobstacles
     Guid: c749179a3b3c31348889a2422dffb16d
     Asset: {fileID: 11400000, guid: c749179a3b3c31348889a2422dffb16d, type: 2}

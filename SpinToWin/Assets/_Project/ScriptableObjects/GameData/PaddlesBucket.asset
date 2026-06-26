@@ -16,16 +16,16 @@ MonoBehaviour:
   m_Sources:
   - {fileID: 102900000, guid: 9e4161bbe6337e648a11c7faf05f53d2, type: 3}
   m_AssetRefs:
-  - Name: paddles_left
+  - Name: paddles_left_2
     Guid: 68be92d10a2e64c4e83ddee6304fb742
     Asset: {fileID: 8508633778605861677, guid: 68be92d10a2e64c4e83ddee6304fb742, type: 3}
-  - Name: paddles_center
+  - Name: paddles_center_1
     Guid: 7ceeae2419d8a1f4f88d8305a00770b4
     Asset: {fileID: 8508633778605861677, guid: 7ceeae2419d8a1f4f88d8305a00770b4, type: 3}
-  - Name: paddles_right
+  - Name: paddles_right_3
     Guid: 883ee4b76c3ec5e4085a9ea450774e84
     Asset: {fileID: 8508633778605861677, guid: 883ee4b76c3ec5e4085a9ea450774e84, type: 3}
-  - Name: paddles_basic
+  - Name: paddles_basic_0
     Guid: 9f3257d7a7ccf3e40a010b205d10992e
     Asset: {fileID: 8508633778605861677, guid: 9f3257d7a7ccf3e40a010b205d10992e, type: 3}
   m_ManualUpdate: 0

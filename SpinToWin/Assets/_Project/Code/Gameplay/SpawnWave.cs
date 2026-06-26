@@ -15,7 +15,7 @@ namespace _Project.Code.Gameplay {
     /// <summary>One parsed cell: what to spawn, plus which paddle variant (when it's a paddle).</summary>
     public struct WaveCell {
         public WaveCellKind Kind;
-        public int PaddleIndex; // -1 = auto (intro order then random); >=0 = paddle bucket index
+        public int PaddleIndex; // -1 = auto (intro order then random); 0-3 = paddle bucket index
 
         public static readonly WaveCell Empty = new WaveCell { Kind = WaveCellKind.Empty, PaddleIndex = -1 };
     }
@@ -33,7 +33,7 @@ namespace _Project.Code.Gameplay {
     ///       r            rare sock     (Rare Sock Bucket)
     ///       x  or #      obstacle      (Obstacle Bucket)
     ///       p            paddle        (auto: introduces each variant in bucket order, then random)
-    ///       0-9          a SPECIFIC paddle by bucket index (0 = first paddle in the bucket)
+    ///       0-3          a SPECIFIC paddle by bucket index (0 = first paddle in the bucket)
     ///     Any other character is treated as empty. A blank line is a full row of empty - handy as a
     ///     breather between clusters.
     ///
@@ -42,11 +42,14 @@ namespace _Project.Code.Gameplay {
     /// </summary>
     [CreateAssetMenu(menuName = "SpinToWin/Spawn Wave", fileName = "Wave")]
     public class SpawnWave : ScriptableObject {
+        /// <summary>Highest paddle index the grid understands ('0'..'3' = four variants).</summary>
+        public const int MaxPaddleIndex = 3;
+
         [Tooltip("Optional designer note - what this wave is for. Not used at runtime.")]
         [SerializeField] private string notes = "";
 
         [Tooltip("Paint the wave. One line = one row (top arrives first); one char = one lane. " +
-                 "Legend: . empty, o/u/r sock tiers, x obstacle, p paddle, 0-9 specific paddle.")]
+                 "Legend: . empty, o/u/r sock tiers, x obstacle, p paddle, 0-3 specific paddle.")]
         [TextArea(4, 16)]
         [SerializeField] private string grid = "";
 
@@ -115,11 +118,11 @@ namespace _Project.Code.Gameplay {
                 case 'P':
                     return Paddle(-1);
                 default:
-                    if (c >= '0' && c <= '9') {
+                    if (c >= '0' && c <= '0' + MaxPaddleIndex) {
                         return Paddle(c - '0');
                     }
 
-                    return WaveCell.Empty; // '.', ' ', '_', or anything unrecognised
+                    return WaveCell.Empty; // '.', ' ', '_', digits above 3, or anything unrecognised
             }
         }
 
