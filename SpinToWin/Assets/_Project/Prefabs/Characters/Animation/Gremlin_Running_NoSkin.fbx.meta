@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 0a3f396885bcaec4a85cefcd6b426236
+guid: 1eb10275d2b16bb4a94233e69ba41014
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
-    materialImportMode: 0
+    materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -83,42 +83,7 @@ ModelImporter:
   humanDescription:
     serializedVersion: 3
     human: []
-    skeleton:
-    - name: gremlin_fella 1(Clone)
-      parentName: 
-      position: {x: 0.00012381183, y: 0.021587985, z: -0.0024589582}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: pSphere1
-      parentName: gremlin_fella 1(Clone)
-      position: {x: -0.00020404707, y: -0.0031323764, z: 0.0024589582}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: pCylinder2
-      parentName: gremlin_fella 1(Clone)
-      position: {x: -0.004089122, y: -0.019556213, z: 0.0029330745}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: pCylinder1
-      parentName: gremlin_fella 1(Clone)
-      position: {x: 0.0037213801, y: -0.019556213, z: 0.0029330745}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: pSphere3
-      parentName: gremlin_fella 1(Clone)
-      position: {x: -0.0004022026, y: 0.019286951, z: 0.0025534513}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: pSphere2
-      parentName: gremlin_fella 1(Clone)
-      position: {x: -0.00034110039, y: 0.0157903, z: 0.0020671678}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: sweep1
-      parentName: gremlin_fella 1(Clone)
-      position: {x: -0.00013490325, y: -0.0057118186, z: -0.0021388284}
-      rotation: {x: 0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
+    skeleton: []
     armTwist: 0.5
     foreArmTwist: 0.5
     upperLegTwist: 0.5
@@ -129,13 +94,13 @@ ModelImporter:
     globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
